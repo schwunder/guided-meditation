@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Gallery</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { padding: 0; margin: 0; }
+    
+    /* Main container */
+    .main-container {
+      width: 100vw;
+      height: 100vh;
+      padding: 200px;
+      position: relative;
+    }
+    
+    @keyframes breathe {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.1),
+                    0 0 40px rgba(255, 255, 255, 0.05);
+        background-color: rgba(255, 255, 255, 0.95);
+      }
+      50% {
+        box-shadow: 0 0 150px rgba(0, 100, 255, 1),
+                    0 0 300px rgba(0, 100, 255, 1),
+                    0 0 450px rgba(0, 100, 255, 0.95),
+                    0 0 600px rgba(0, 100, 255, 0.9),
+                    0 0 800px rgba(0, 100, 255, 0.85),
+                    0 0 1000px rgba(0, 100, 255, 0.8),
+                    inset 0 0 300px rgba(0, 100, 255, 0.7);
+        background-color: rgba(0, 50, 150, 0.8);
+      }
+    }
+    
+    @keyframes breatheOverlay {
+      0%, 100% {
+        opacity: 0;
+        background: radial-gradient(circle at center, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
+      }
+      50% {
+        opacity: 1;
+        background: radial-gradient(circle at center, rgba(0, 100, 255, 0.9), rgba(0, 100, 255, 0.6), rgba(0, 100, 255, 0.3), rgba(0, 100, 255, 0));
+      }
+    }
+    
+    h1 { text-align: center; margin-bottom: 20px; }
+
+    /* Gallery styles */
+    .gallery-view { display: block; }
+    .main-view { display: none; }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+    .item { background: #f0f0f0; cursor: pointer; overflow: hidden; }
+    .item img, .item video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .fullscreen { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center; }
+    .fullscreen.hidden { display: none; }
+    .fullscreen button { position: absolute; top: 20px; right: 20px; background: white; border: none; width: 40px; height: 40px; cursor: pointer; }
+    .fullscreen img, .fullscreen video { max-width: 90vw; max-height: 80vh; }
+
+    /* Main page styles */
+    .main-view { 
+      display: block; 
+      height: calc(100vh - 40px); 
+      min-height: 0;
+      border: none;
+      animation: breathe 8s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .main-view::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      animation: breatheOverlay 15s ease-in-out infinite;
+      border-radius: inherit;
+    }
+    .main-view #asset-container { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 20px; 
+      padding: 20px; 
+      overflow-y: auto; 
+      height: 100%;
+      transition: opacity 0.5s ease-in-out;
+      position: relative;
+      z-index: 2;
+    }
+    
+    /* Animation overlay styles */
+    .animation-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000 url('/assets/muladhara.webp') center center / cover no-repeat;
+      z-index: 9999;
+      overflow: hidden;
+      transition: opacity 0.5s ease-out;
+    }
+    
+    .animation-overlay.fade-out {
+      opacity: 0;
+    }
+    
+    .radiating-dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff;
+      transform: translate(-50%, -50%) scale(1);
+      will-change: transform;
+    }
+    
+    .radiating-dot.animate {
+      animation: radiate 2.5s ease-out forwards;
+    }
+    
+    @keyframes radiate {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(var(--final-scale, 500));
+      }
+    }
+    .main-view #asset-container .preview-item { display: flex; gap: 20px; background: #f0f0f0; overflow: hidden; min-height: 200px; }
+    .main-view #asset-container .preview-item .thumbnail { flex: 1; aspect-ratio: 16/9; overflow: hidden; }
+    .main-view #asset-container .preview-item .thumbnail img, .main-view #asset-container .preview-item .thumbnail video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .main-view #asset-container .preview-item .item-sidebar { width: 300px; padding: 20px; background: #e0e0e0; overflow-y: auto; display: flex; flex-direction: column; }
+    .main-view #asset-container .preview-item .item-sidebar h3 { margin-bottom: 10px; }
+    .main-view #asset-container .preview-item .item-sidebar .preview-content { flex: 1; }
+    .main-view #asset-container .preview-item .item-sidebar .preview-content p { margin: 10px 0; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <!-- Gallery view -->
+    <div id="gallery-view" class="gallery-view">
+      <h1>Media Gallery</h1>
+      <div id="grid" class="grid"></div>
+      <div id="fullscreen" class="fullscreen hidden">
+        <button id="close">✕</button>
+        <div id="content"></div>
+      </div>
+    </div>
+
+    <!-- Main page view -->
+    <div id="main-view" class="main-view">
+      <div id="asset-container"></div>
+    </div>
+  </div>
+
+  <script>
+    // Load appropriate script based on route
+    const isAssetsRoute = window.location.pathname === '/assets';
+    const script = document.createElement('script');
+    script.src = isAssetsRoute ? 'gallery.js' : 'main.js';
+    document.body.appendChild(script);
+
+    // Show/hide views based on route
+    if (isAssetsRoute) {
+      document.getElementById('gallery-view').style.display = 'block';
+      document.getElementById('main-view').style.display = 'none';
+    } else {
+      document.getElementById('gallery-view').style.display = 'none';
+      document.getElementById('main-view').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>
