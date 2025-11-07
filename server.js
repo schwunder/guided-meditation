@@ -11,7 +11,7 @@ Bun.serve({
       return Response.json(assetFiles);
     }
 
-    if (urlPath === '/' || urlPath === '/assets') {
+    if (urlPath === '/') {
       const indexFile = Bun.file('./public/index.html');
       return new Response(indexFile);
     }
