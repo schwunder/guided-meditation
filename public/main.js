@@ -12,7 +12,7 @@ const MEDIA_TYPE_BY_SEQUENCE_ITEM = {
 const assetCache = new Map();
 
 
-const buildAssetUrl = (filename) => `/assets/${encodeURIComponent(filename)}`;
+const buildAssetUrl = (filename) => `/assets/${filename.split('/').map(encodeURIComponent).join('/')}`;
 
 
 const ensureAssetEntry = (assetPath, mediaType) => {
