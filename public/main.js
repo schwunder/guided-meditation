@@ -1,21 +1,42 @@
 // ============================================
-// CONFIG - Meditation layout & timing
+// CONFIG - Meditation sequence & animations
 // ============================================
-const MEDITATION_LAYOUT = {
-  'image-1.png': { row: 0, col: 0, span: 2 },
-  'video-1.mp4': { row: 1, col: 0, span: 1 },
-  'video-2.mp4': { row: 1, col: 1, span: 1 },
-  'video-3.mp4': { row: 2, col: 0, span: 1 },
-  'video-4.mp4': { row: 2, col: 1, span: 1 }
+
+// MEDITATION SEQUENCE - Define the flow here
+// Types: 'chakra' (animated intro), 'image' (static), 'video' (playback)
+const MEDITATION_SEQUENCE = [
+  { type: 'chakra', asset: 'muladhara.webp', duration: 2500 },
+  { type: 'image', asset: 'image-1.png', duration: 3000 },
+  { type: 'video', asset: 'video-1.mp4' },
+  { type: 'image', asset: 'image-1.png', duration: 3000 },
+  { type: 'chakra', asset: 'muladhara.webp', duration: 2500 },
+  { type: 'video', asset: 'video-2.mp4' },
+  // Add more sequence items here...
+];
+
+// COLOR ANIMATIONS - Tinker with hue/breathing effects here
+const COLOR_ANIMATIONS = {
+  breathingGlow: {
+    duration: 8000,           // Full breathing cycle (ms)
+    startColor: 'rgba(255, 255, 255, 0.95)',
+    peakColor: 'rgba(0, 50, 150, 0.8)',
+    startShadow: '0 0 20px rgba(255, 255, 255, 0.1), 0 0 40px rgba(255, 255, 255, 0.05)',
+    peakShadow: '0 0 150px rgba(0, 100, 255, 1), 0 0 300px rgba(0, 100, 255, 1), 0 0 450px rgba(0, 100, 255, 0.95), 0 0 600px rgba(0, 100, 255, 0.9), 0 0 800px rgba(0, 100, 255, 0.85), 0 0 1000px rgba(0, 100, 255, 0.8), inset 0 0 300px rgba(0, 100, 255, 0.7)'
+  },
+  breathingOverlay: {
+    duration: 15000,          // Overlay breathing cycle (ms)
+    peakGradient: 'radial-gradient(circle at center, rgba(0, 100, 255, 0.9), rgba(0, 100, 255, 0.6), rgba(0, 100, 255, 0.3), rgba(0, 100, 255, 0))'
+  },
+  chakraIntro: {
+    duration: 2500,           // Radiate animation duration
+    fadeOutDuration: 500,     // Fade to content duration
+    dotStartSize: 8,          // Starting dot size (px)
+    dotRadius: 4,             // Radius for scale calculation
+    dotColor: '#fff'          // Radiating dot color
+  }
 };
 
-const ANIMATION = {
-  introDuration: 2500,
-  fadeOutDuration: 500,
-  dotStartSize: 8,
-  dotRadius: 4
-};
-
+// MEDIA TYPES - Supported file formats
 const MEDIA_TYPES = {
   video: ['mp4', 'webm', 'ogg', 'mov', 'avi'],
   image: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp']
@@ -28,91 +49,65 @@ const getFileExt = (filename) => filename.split('.').pop().toLowerCase();
 const isVideo = (filename) => MEDIA_TYPES.video.includes(getFileExt(filename));
 const isImage = (filename) => MEDIA_TYPES.image.includes(getFileExt(filename));
 const buildAssetUrl = (filename) => `/assets/${encodeURIComponent(filename)}`;
-const getDisplayName = (filename) => filename.replace(/\.[^/.]+$/, '');
+
+// Inject color animation settings into CSS
+function applyColorAnimations() {
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes breathe {
+      0%, 100% {
+        box-shadow: ${COLOR_ANIMATIONS.breathingGlow.startShadow};
+        background-color: ${COLOR_ANIMATIONS.breathingGlow.startColor};
+      }
+      50% {
+        box-shadow: ${COLOR_ANIMATIONS.breathingGlow.peakShadow};
+        background-color: ${COLOR_ANIMATIONS.breathingGlow.peakColor};
+      }
+    }
+
+    @keyframes breatheOverlay {
+      0%, 100% {
+        opacity: 0;
+        background: radial-gradient(circle at center, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
+      }
+      50% {
+        opacity: 1;
+        background: ${COLOR_ANIMATIONS.breathingOverlay.peakGradient};
+      }
+    }
+
+    .main-view {
+      animation: breathe ${COLOR_ANIMATIONS.breathingGlow.duration}ms ease-in-out infinite !important;
+    }
+
+    .main-view::before {
+      animation: breatheOverlay ${COLOR_ANIMATIONS.breathingOverlay.duration}ms ease-in-out infinite !important;
+    }
+
+    .radiating-dot.animate {
+      animation: radiate ${COLOR_ANIMATIONS.chakraIntro.duration}ms ease-out forwards !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 // ============================================
 // DOM BUILDERS - HTML structure/boilerplate
 // ============================================
-function buildPreviewItem(filename) {
-  const container = document.createElement('div');
-  container.className = 'preview-item';
-  container.style.gridColumn = `span ${MEDITATION_LAYOUT[filename].span}`;
-
-  const mediaPreview = buildMediaPreview(filename);
-  const descriptionPanel = buildDescriptionPanel(filename);
-
-  container.appendChild(mediaPreview);
-  container.appendChild(descriptionPanel);
-  return container;
-}
-
-function buildMediaPreview(filename) {
-  const preview = document.createElement('div');
-  preview.className = 'thumbnail';
-
-  if (isVideo(filename)) {
-    preview.appendChild(buildVideoElement(filename));
-  } else if (isImage(filename)) {
-    preview.appendChild(buildImageElement(filename));
-  }
-
-  return preview;
-}
-
-function buildVideoElement(filename) {
-  const video = document.createElement('video');
-  video.src = buildAssetUrl(filename);
-  video.muted = true;
-  video.autoplay = true;
-  video.playsInline = true;
-  video.preload = 'auto';
-  video.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
-
-  // Attach event handlers
-  video.addEventListener('loadeddata', () => handleVideoLoaded(video));
-
-  // Try initial play
-  video.play().catch(err => {
-    console.log('Initial autoplay prevented:', err);
-  });
-
-  return video;
-}
-
-function buildImageElement(filename) {
-  const img = document.createElement('img');
-  img.src = buildAssetUrl(filename);
-  img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
-  return img;
-}
-
-function buildDescriptionPanel(filename) {
-  const panel = document.createElement('div');
-  panel.className = 'item-sidebar';
-  const displayName = getDisplayName(filename);
-
-  panel.innerHTML = `
-    <h3>${displayName}</h3>
-    <div class="preview-content">
-      <p>This is the preview text for ${displayName}.</p>
-    </div>
-  `;
-
-  return panel;
-}
-
-function buildChakraOverlay() {
+function buildChakraOverlay(assetPath) {
   const overlay = document.createElement('div');
   overlay.className = 'animation-overlay';
+  overlay.style.backgroundImage = `url('${buildAssetUrl(assetPath)}')`;
 
   const dot = document.createElement('div');
   dot.className = 'radiating-dot';
+  dot.style.background = COLOR_ANIMATIONS.chakraIntro.dotColor;
 
   // Calculate scale needed to cover entire viewport diagonal
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const diagonal = Math.sqrt(vw * vw + vh * vh);
-  const finalScale = (diagonal / 2) / ANIMATION.dotRadius;
+  const finalScale = (diagonal / 2) / COLOR_ANIMATIONS.chakraIntro.dotRadius;
 
   overlay.style.setProperty('--final-scale', finalScale.toString());
   overlay.appendChild(dot);
@@ -120,94 +115,130 @@ function buildChakraOverlay() {
   return { overlay, dot };
 }
 
-// ============================================
-// LOGIC - Business rules & data processing
-// ============================================
-async function fetchAssets() {
-  const response = await fetch('/api/assets');
-  return response.json();
+function buildVideoElement(assetPath) {
+  const video = document.createElement('video');
+  video.src = buildAssetUrl(assetPath);
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = 'auto';
+  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block';
+  return video;
 }
 
-function filterMappedAssets(assets) {
-  return assets.filter(filename => MEDITATION_LAYOUT.hasOwnProperty(filename));
+function buildImageElement(assetPath) {
+  const img = document.createElement('img');
+  img.src = buildAssetUrl(assetPath);
+  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;margin:auto';
+  return img;
 }
 
-function sortByLayoutPosition(assets) {
-  return assets.sort((a, b) => {
-    const posA = MEDITATION_LAYOUT[a];
-    const posB = MEDITATION_LAYOUT[b];
-    if (posA.row !== posB.row) return posA.row - posB.row;
-    return posA.col - posB.col;
+// ============================================
+// SEQUENCE PLAYBACK - Sequential meditation flow
+// ============================================
+let currentSequenceIndex = 0;
+let sequenceContainer = null;
+
+async function playSequence() {
+  sequenceContainer = document.getElementById('asset-container');
+  sequenceContainer.innerHTML = ''; // Clear any existing content
+
+  currentSequenceIndex = 0;
+  await playNextSequenceItem();
+}
+
+async function playNextSequenceItem() {
+  if (currentSequenceIndex >= MEDITATION_SEQUENCE.length) {
+    console.log('Meditation sequence complete');
+    return;
+  }
+
+  const item = MEDITATION_SEQUENCE[currentSequenceIndex];
+  currentSequenceIndex++;
+
+  if (item.type === 'chakra') {
+    await playChakraAnimation(item.asset, item.duration);
+  } else if (item.type === 'image') {
+    await playImageItem(item.asset, item.duration);
+  } else if (item.type === 'video') {
+    await playVideoItem(item.asset);
+  }
+
+  // Continue to next item
+  await playNextSequenceItem();
+}
+
+function playChakraAnimation(assetPath, duration) {
+  return new Promise((resolve) => {
+    // Hide content initially
+    sequenceContainer.style.opacity = '0';
+    sequenceContainer.style.visibility = 'hidden';
+
+    // Build and mount overlay
+    const { overlay, dot } = buildChakraOverlay(assetPath);
+    document.body.appendChild(overlay);
+
+    // Trigger animation
+    requestAnimationFrame(() => {
+      dot.classList.add('animate');
+    });
+
+    // Remove overlay after animation
+    setTimeout(() => {
+      overlay.classList.add('fade-out');
+
+      setTimeout(() => {
+        overlay.remove();
+        sequenceContainer.style.opacity = '1';
+        sequenceContainer.style.visibility = 'visible';
+        resolve();
+      }, COLOR_ANIMATIONS.chakraIntro.fadeOutDuration);
+    }, duration);
   });
 }
 
-function renderPreviewGrid(assets) {
-  const container = document.getElementById('asset-container');
-  assets.forEach(filename => {
-    const item = buildPreviewItem(filename);
-    container.appendChild(item);
+function playImageItem(assetPath, duration) {
+  return new Promise((resolve) => {
+    sequenceContainer.innerHTML = '';
+    const img = buildImageElement(assetPath);
+    sequenceContainer.appendChild(img);
+
+    setTimeout(() => {
+      resolve();
+    }, duration);
   });
 }
 
-function showEmptyState() {
-  const container = document.getElementById('asset-container');
-  container.innerHTML = '<p>No assets found</p>';
-}
+function playVideoItem(assetPath) {
+  return new Promise((resolve) => {
+    sequenceContainer.innerHTML = '';
+    const video = buildVideoElement(assetPath);
+    sequenceContainer.appendChild(video);
 
-// ============================================
-// EVENT HANDLERS - User interactions
-// ============================================
-function handleVideoLoaded(video) {
-  video.play().catch(err => {
-    console.log('Autoplay prevented:', err);
+    video.addEventListener('ended', () => {
+      resolve();
+    });
+
+    video.addEventListener('loadeddata', () => {
+      video.play().catch(err => {
+        console.log('Autoplay prevented:', err);
+      });
+    });
+
+    video.play().catch(err => {
+      console.log('Initial autoplay prevented:', err);
+    });
   });
-}
-
-// ============================================
-// ANIMATION SEQUENCE
-// ============================================
-function startChakraIntro() {
-  const container = document.getElementById('asset-container');
-
-  // Hide content initially
-  container.style.opacity = '0';
-  container.style.visibility = 'hidden';
-
-  // Build and mount overlay
-  const { overlay, dot } = buildChakraOverlay();
-  document.body.appendChild(overlay);
-
-  // Trigger animation
-  requestAnimationFrame(() => {
-    dot.classList.add('animate');
-  });
-
-  // Reveal content after animation
-  setTimeout(() => {
-    overlay.classList.add('fade-out');
-    container.style.opacity = '1';
-    container.style.visibility = 'visible';
-
-    setTimeout(() => overlay.remove(), ANIMATION.fadeOutDuration);
-  }, ANIMATION.introDuration);
 }
 
 // ============================================
 // INIT - Startup sequence
 // ============================================
 async function init() {
-  const assets = await fetchAssets();
+  // Apply color animation configurations
+  applyColorAnimations();
 
-  if (assets.length === 0) {
-    showEmptyState();
-    return;
-  }
-
-  const mappedAssets = filterMappedAssets(assets);
-  const sortedAssets = sortByLayoutPosition(mappedAssets);
-
-  renderPreviewGrid(sortedAssets);
+  // Start meditation sequence
+  await playSequence();
 }
 
-startChakraIntro();
 init();
