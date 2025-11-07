@@ -2,22 +2,24 @@ Bun.serve({
   port: 8080,
   async fetch(request) {
     const { pathname } = new URL(request.url);
-
     if (pathname === '/api/assets') {
       const files = await Bun.readdir('./public/assets');
       return Response.json(files.filter(f => !f.startsWith('.')));
     }
 
-    let filePath = decodeURIComponent(pathname);
     if (pathname === '/') {
-      filePath = '/index.html';
+      return new Response(Bun.file('./public/index.html'));
     }
-    const file = Bun.file(`./public${filePath}`);
-    
-    if (await file.exists()) {
-      return new Response(file);
+
+    if (pathname === '/main.js') {
+      return new Response(Bun.file('./public/main.js'));
     }
-    
+
+    if (pathname.startsWith('/assets/')) {
+      const assetPath = decodeURIComponent(pathname);
+      return new Response(Bun.file(`./public${assetPath}`));
+    }
+
     return new Response('Not Found', { status: 404 });
   }
 });
