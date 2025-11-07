@@ -1,244 +1,173 @@
-// ============================================
-// CONFIG - Meditation sequence & animations
-// ============================================
-
-// MEDITATION SEQUENCE - Define the flow here
-// Types: 'chakra' (animated intro), 'image' (static), 'video' (playback)
 const MEDITATION_SEQUENCE = [
-  { type: 'chakra', asset: 'muladhara.webp', duration: 2500 },
-  { type: 'image', asset: 'image-1.png', duration: 3000 },
-  { type: 'video', asset: 'video-1.mp4' },
-  { type: 'image', asset: 'image-1.png', duration: 3000 },
-  { type: 'chakra', asset: 'muladhara.webp', duration: 2500 },
-  { type: 'video', asset: 'video-2.mp4' },
-  // Add more sequence items here...
+  { type: 'chakra', asset: 'chakras/1-muladhara.webp', duration: 2500 },
+  { type: 'checkpoint', asset: 'checkpoints/1-image-1.png', duration: 3000 },
+  { type: 'transition', asset: 'transitions/1-video-1.mp4' },
+  { type: 'checkpoint', asset: 'checkpoints/1-image-2.png', duration: 3000 },
+  { type: 'chakra', asset: 'chakras/2-svadhishthana.webp', duration: 2500 },
 ];
 
-// COLOR ANIMATIONS - Tinker with hue/breathing effects here
 const COLOR_ANIMATIONS = {
-  breathingGlow: {
-    duration: 8000,           // Full breathing cycle (ms)
-    startColor: 'rgba(255, 255, 255, 0.95)',
-    peakColor: 'rgba(0, 50, 150, 0.8)',
-    startShadow: '0 0 20px rgba(255, 255, 255, 0.1), 0 0 40px rgba(255, 255, 255, 0.05)',
-    peakShadow: '0 0 150px rgba(0, 100, 255, 1), 0 0 300px rgba(0, 100, 255, 1), 0 0 450px rgba(0, 100, 255, 0.95), 0 0 600px rgba(0, 100, 255, 0.9), 0 0 800px rgba(0, 100, 255, 0.85), 0 0 1000px rgba(0, 100, 255, 0.8), inset 0 0 300px rgba(0, 100, 255, 0.7)'
-  },
-  breathingOverlay: {
-    duration: 15000,          // Overlay breathing cycle (ms)
-    peakGradient: 'radial-gradient(circle at center, rgba(0, 100, 255, 0.9), rgba(0, 100, 255, 0.6), rgba(0, 100, 255, 0.3), rgba(0, 100, 255, 0))'
-  },
-  chakraIntro: {
-    duration: 2500,           // Radiate animation duration
-    fadeOutDuration: 500,     // Fade to content duration
-    dotStartSize: 8,          // Starting dot size (px)
-    dotRadius: 4,             // Radius for scale calculation
-    dotColor: '#fff'          // Radiating dot color
-  }
+  breathingGlow: { duration: 8000, startColor: 'rgba(255, 255, 255, 0.95)', peakColor: 'rgba(0, 50, 150, 0.8)', startShadow: '0 0 20px rgba(255, 255, 255, 0.1), 0 0 40px rgba(255, 255, 255, 0.05)', peakShadow: '0 0 150px rgba(0, 100, 255, 1), 0 0 300px rgba(0, 100, 255, 1), 0 0 450px rgba(0, 100, 255, 0.95), 0 0 600px rgba(0, 100, 255, 0.9), 0 0 800px rgba(0, 100, 255, 0.85), 0 0 1000px rgba(0, 100, 255, 0.8), inset 0 0 300px rgba(0, 100, 255, 0.7)' },
+  breathingOverlay: { duration: 15000, contentOpacity: 0.7 },
+  chakraIntro: { duration: 2500, fadeOutDuration: 500, dotRadius: 4, dotColor: '#fff' }
 };
 
-// MEDIA TYPES - Supported file formats
-const MEDIA_TYPES = {
-  video: ['mp4', 'webm', 'ogg', 'mov', 'avi'],
-  image: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp']
-};
+const MEDIA_SIZING = { maxWidthRatio: 0.8, minPaddingRatio: 0.05 };
 
-// ============================================
-// UTILITIES - Pure helper functions
-// ============================================
-const getFileExt = (filename) => filename.split('.').pop().toLowerCase();
-const isVideo = (filename) => MEDIA_TYPES.video.includes(getFileExt(filename));
-const isImage = (filename) => MEDIA_TYPES.image.includes(getFileExt(filename));
 const buildAssetUrl = (filename) => `/assets/${encodeURIComponent(filename)}`;
 
-// Inject color animation settings into CSS
-function applyColorAnimations() {
+const injectStyle = (id, cssContent) => {
+  const existingStyle = document.getElementById(id);
+  if (existingStyle) existingStyle.remove();
   const style = document.createElement('style');
-  style.textContent = `
-    @keyframes breathe {
-      0%, 100% {
-        box-shadow: ${COLOR_ANIMATIONS.breathingGlow.startShadow};
-        background-color: ${COLOR_ANIMATIONS.breathingGlow.startColor};
-      }
-      50% {
-        box-shadow: ${COLOR_ANIMATIONS.breathingGlow.peakShadow};
-        background-color: ${COLOR_ANIMATIONS.breathingGlow.peakColor};
-      }
-    }
-
-    @keyframes breatheOverlay {
-      0%, 100% {
-        opacity: 0;
-        background: radial-gradient(circle at center, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
-      }
-      50% {
-        opacity: 1;
-        background: ${COLOR_ANIMATIONS.breathingOverlay.peakGradient};
-      }
-    }
-
-    .main-view {
-      animation: breathe ${COLOR_ANIMATIONS.breathingGlow.duration}ms ease-in-out infinite !important;
-    }
-
-    .main-view::before {
-      animation: breatheOverlay ${COLOR_ANIMATIONS.breathingOverlay.duration}ms ease-in-out infinite !important;
-    }
-
-    .radiating-dot.animate {
-      animation: radiate ${COLOR_ANIMATIONS.chakraIntro.duration}ms ease-out forwards !important;
-    }
-  `;
+  style.id = id;
+  style.textContent = cssContent;
   document.head.appendChild(style);
-}
+};
 
-// ============================================
-// DOM BUILDERS - HTML structure/boilerplate
-// ============================================
-function buildChakraOverlay(assetPath) {
+const applyColorAnimations = () => {
+  const { breathingGlow, breathingOverlay, chakraIntro } = COLOR_ANIMATIONS;
+  injectStyle('breathing-animations-style', `
+    @keyframes breathe { 0%, 100% { box-shadow: ${breathingGlow.startShadow}; background-color: ${breathingGlow.startColor}; } 50% { box-shadow: ${breathingGlow.peakShadow}; background-color: ${breathingGlow.peakColor}; } }
+    @keyframes breatheContentOpacity { 0%, 20% { opacity: 1; } 30%, 70% { opacity: ${breathingOverlay.contentOpacity}; } 80%, 100% { opacity: 1; } }
+    .main-view { animation: breathe ${breathingGlow.duration}ms ease-in-out infinite !important; }
+    .main-view #asset-container { animation: breatheContentOpacity ${breathingOverlay.duration}ms ease-in-out infinite !important; }
+    .radiating-dot.animate { animation: radiate ${chakraIntro.duration}ms ease-out forwards !important; }
+  `);
+};
+
+const createChakraOverlay = (assetPath) => {
   const overlay = document.createElement('div');
   overlay.className = 'animation-overlay';
   overlay.style.backgroundImage = `url('${buildAssetUrl(assetPath)}')`;
-
   const dot = document.createElement('div');
   dot.className = 'radiating-dot';
   dot.style.background = COLOR_ANIMATIONS.chakraIntro.dotColor;
-
-  // Calculate scale needed to cover entire viewport diagonal
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const diagonal = Math.sqrt(vw * vw + vh * vh);
-  const finalScale = (diagonal / 2) / COLOR_ANIMATIONS.chakraIntro.dotRadius;
-
+  const finalScale = Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2) / 2 / COLOR_ANIMATIONS.chakraIntro.dotRadius;
   overlay.style.setProperty('--final-scale', finalScale.toString());
   overlay.appendChild(dot);
-
   return { overlay, dot };
-}
+};
 
-function buildVideoElement(assetPath) {
-  const video = document.createElement('video');
-  video.src = buildAssetUrl(assetPath);
-  video.muted = true;
-  video.playsInline = true;
-  video.preload = 'auto';
-  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block';
-  return video;
-}
-
-function buildImageElement(assetPath) {
-  const img = document.createElement('img');
-  img.src = buildAssetUrl(assetPath);
-  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;margin:auto';
-  return img;
-}
-
-// ============================================
-// SEQUENCE PLAYBACK - Sequential meditation flow
-// ============================================
-let currentSequenceIndex = 0;
-let sequenceContainer = null;
-
-async function playSequence() {
-  sequenceContainer = document.getElementById('asset-container');
-  sequenceContainer.innerHTML = ''; // Clear any existing content
-
-  currentSequenceIndex = 0;
-  await playNextSequenceItem();
-}
-
-async function playNextSequenceItem() {
-  if (currentSequenceIndex >= MEDITATION_SEQUENCE.length) {
-    console.log('Meditation sequence complete');
-    return;
+const calculateMediaSize = (mediaElement, viewportWidth, viewportHeight) => {
+  const naturalWidth = mediaElement.videoWidth || mediaElement.naturalWidth || mediaElement.width;
+  const naturalHeight = mediaElement.videoHeight || mediaElement.naturalHeight || mediaElement.height;
+  if (!naturalWidth || !naturalHeight) return null;
+  const maxWidth = viewportWidth * MEDIA_SIZING.maxWidthRatio;
+  let scale = maxWidth / naturalWidth;
+  let finalWidth = naturalWidth * scale;
+  let finalHeight = naturalHeight * scale;
+  const minPadding = viewportHeight * MEDIA_SIZING.minPaddingRatio;
+  const maxHeight = viewportHeight - (minPadding * 2);
+  if (finalHeight > maxHeight) {
+    scale = maxHeight / naturalHeight;
+    finalWidth = naturalWidth * scale;
+    finalHeight = naturalHeight * scale;
   }
+  return { width: finalWidth, height: finalHeight };
+};
 
-  const item = MEDITATION_SEQUENCE[currentSequenceIndex];
-  currentSequenceIndex++;
+const resizeHandlers = new WeakMap();
 
-  if (item.type === 'chakra') {
-    await playChakraAnimation(item.asset, item.duration);
-  } else if (item.type === 'image') {
-    await playImageItem(item.asset, item.duration);
-  } else if (item.type === 'video') {
-    await playVideoItem(item.asset);
+const applyMediaSizing = (mediaElement) => {
+  const size = calculateMediaSize(mediaElement, window.innerWidth, window.innerHeight);
+  if (size) {
+    mediaElement.style.width = `${size.width}px`;
+    mediaElement.style.height = `${size.height}px`;
   }
+};
 
-  // Continue to next item
-  await playNextSequenceItem();
-}
+const createMediaElement = (assetPath, mediaType) => {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'media-wrapper';
+  const url = buildAssetUrl(assetPath);
+  const handleResize = () => {
+    const mediaElement = wrapper.querySelector('img, video');
+    if (mediaElement) applyMediaSizing(mediaElement);
+  };
+  const media = mediaType === 'video' ? document.createElement('video') : document.createElement('img');
+  media.src = url;
+  if (mediaType === 'video') {
+    media.muted = true;
+    media.playsInline = true;
+    media.preload = 'auto';
+    media.addEventListener('loadedmetadata', () => applyMediaSizing(media));
+  } else {
+    media.addEventListener('load', () => applyMediaSizing(media));
+  }
+  resizeHandlers.set(wrapper, handleResize);
+  window.addEventListener('resize', handleResize);
+  wrapper.appendChild(media);
+  return wrapper;
+};
 
-function playChakraAnimation(assetPath, duration) {
+const clearContainer = (container) => {
+  container.querySelectorAll('.media-wrapper').forEach(wrapper => {
+    const handler = resizeHandlers.get(wrapper);
+    if (handler) {
+      window.removeEventListener('resize', handler);
+      resizeHandlers.delete(wrapper);
+    }
+  });
+  container.innerHTML = '';
+};
+
+const playChakraAnimation = (container, assetPath, duration) => {
   return new Promise((resolve) => {
-    // Hide content initially
-    sequenceContainer.style.opacity = '0';
-    sequenceContainer.style.visibility = 'hidden';
-
-    // Build and mount overlay
-    const { overlay, dot } = buildChakraOverlay(assetPath);
+    container.style.opacity = '0';
+    container.style.visibility = 'hidden';
+    const { overlay, dot } = createChakraOverlay(assetPath);
     document.body.appendChild(overlay);
-
-    // Trigger animation
-    requestAnimationFrame(() => {
-      dot.classList.add('animate');
-    });
-
-    // Remove overlay after animation
+    requestAnimationFrame(() => dot.classList.add('animate'));
     setTimeout(() => {
       overlay.classList.add('fade-out');
-
       setTimeout(() => {
         overlay.remove();
-        sequenceContainer.style.opacity = '1';
-        sequenceContainer.style.visibility = 'visible';
+        container.style.opacity = '1';
+        container.style.visibility = 'visible';
         resolve();
       }, COLOR_ANIMATIONS.chakraIntro.fadeOutDuration);
     }, duration);
   });
-}
+};
 
-function playImageItem(assetPath, duration) {
+const playCheckpointItem = (container, assetPath, duration) => {
   return new Promise((resolve) => {
-    sequenceContainer.innerHTML = '';
-    const img = buildImageElement(assetPath);
-    sequenceContainer.appendChild(img);
-
-    setTimeout(() => {
-      resolve();
-    }, duration);
+    clearContainer(container);
+    container.appendChild(createMediaElement(assetPath, 'image'));
+    setTimeout(resolve, duration);
   });
-}
+};
 
-function playVideoItem(assetPath) {
+const playTransitionItem = (container, assetPath) => {
   return new Promise((resolve) => {
-    sequenceContainer.innerHTML = '';
-    const video = buildVideoElement(assetPath);
-    sequenceContainer.appendChild(video);
-
-    video.addEventListener('ended', () => {
-      resolve();
-    });
-
-    video.addEventListener('loadeddata', () => {
-      video.play().catch(err => {
-        console.log('Autoplay prevented:', err);
-      });
-    });
-
-    video.play().catch(err => {
-      console.log('Initial autoplay prevented:', err);
-    });
+    clearContainer(container);
+    const wrapper = createMediaElement(assetPath, 'video');
+    const video = wrapper.querySelector('video');
+    container.appendChild(wrapper);
+    video.addEventListener('ended', resolve, { once: true });
+    video.play();
+    video.addEventListener('loadeddata', () => video.play(), { once: true });
   });
-}
+};
 
-// ============================================
-// INIT - Startup sequence
-// ============================================
-async function init() {
-  // Apply color animation configurations
+const SEQUENCE_HANDLERS = { chakra: playChakraAnimation, checkpoint: playCheckpointItem, transition: playTransitionItem };
+
+const playSequence = async (container) => {
+  clearContainer(container);
+  for (const item of MEDITATION_SEQUENCE) {
+    await SEQUENCE_HANDLERS[item.type](container, item.asset, item.duration);
+  }
+  console.log('Meditation sequence complete');
+};
+
+const init = async () => {
   applyColorAnimations();
+  await playSequence(document.getElementById('asset-container'));
+};
 
-  // Start meditation sequence
-  await playSequence();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
 }
-
-init();

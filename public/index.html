@@ -3,131 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Guided meditation experience with chakra visualizations and checkpoints">
   <title>Guided Meditation</title>
   <style>
+    :root { --animation-duration-border: 3s; --transition-duration-fade: 0.5s; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { padding: 0; margin: 0; }
-
-    /* Main container */
-    .main-container {
-      width: 100vw;
-      height: 100vh;
-      padding: 200px;
-      position: relative;
-    }
-
-    @keyframes breathe {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.1),
-                    0 0 40px rgba(255, 255, 255, 0.05);
-        background-color: rgba(255, 255, 255, 0.95);
-      }
-      50% {
-        box-shadow: 0 0 150px rgba(0, 100, 255, 1),
-                    0 0 300px rgba(0, 100, 255, 1),
-                    0 0 450px rgba(0, 100, 255, 0.95),
-                    0 0 600px rgba(0, 100, 255, 0.9),
-                    0 0 800px rgba(0, 100, 255, 0.85),
-                    0 0 1000px rgba(0, 100, 255, 0.8),
-                    inset 0 0 300px rgba(0, 100, 255, 0.7);
-        background-color: rgba(0, 50, 150, 0.8);
-      }
-    }
-
-    @keyframes breatheOverlay {
-      0%, 100% {
-        opacity: 0;
-        background: radial-gradient(circle at center, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
-      }
-      50% {
-        opacity: 1;
-        background: radial-gradient(circle at center, rgba(0, 100, 255, 0.9), rgba(0, 100, 255, 0.6), rgba(0, 100, 255, 0.3), rgba(0, 100, 255, 0));
-      }
-    }
-
-    /* Main view - Fullscreen meditation container */
-    .main-view {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: calc(100vh - 40px);
-      min-height: 0;
-      border: none;
-      animation: breathe 8s ease-in-out infinite;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .main-view::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 1;
-      animation: breatheOverlay 15s ease-in-out infinite;
-      border-radius: inherit;
-    }
-
-    .main-view #asset-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transition: opacity 0.5s ease-in-out;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Animation overlay styles */
-    .animation-overlay {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #000 url('/assets/muladhara.webp') center center / cover no-repeat;
-      z-index: 9999;
-      overflow: hidden;
-      transition: opacity 0.5s ease-out;
-    }
-
-    .animation-overlay.fade-out {
-      opacity: 0;
-    }
-
-    .radiating-dot {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #fff;
-      transform: translate(-50%, -50%) scale(1);
-      will-change: transform;
-    }
-
-    .radiating-dot.animate {
-      animation: radiate 2.5s ease-out forwards;
-    }
-
-    @keyframes radiate {
-      0% {
-        transform: translate(-50%, -50%) scale(1);
-      }
-      100% {
-        transform: translate(-50%, -50%) scale(var(--final-scale, 500));
-      }
-    }
+    html, body { height: 100%; overflow: hidden; }
+    @keyframes radiateBorder { 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 100, 255, 0), 0 0 0 0 rgba(0, 100, 255, 0), 0 0 0 0 rgba(0, 100, 255, 0); } 50% { box-shadow: 0 0 20px 2px rgba(0, 100, 255, 0.8), 0 0 40px 4px rgba(0, 100, 255, 0.6), 0 0 80px 8px rgba(0, 100, 255, 0.4); } }
+    @keyframes radiate { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) scale(var(--final-scale, 500)); } }
+    .main-view { display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+    .main-view #asset-container { position: relative; width: 100%; height: 100%; overflow: hidden; z-index: 2; display: flex; align-items: center; justify-content: center; }
+    .media-wrapper { position: relative; display: inline-block; width: auto; height: auto; animation: radiateBorder var(--animation-duration-border) ease-in-out infinite; }
+    .media-wrapper img, .media-wrapper video { display: block; width: auto; height: auto; object-fit: contain; }
+    .animation-overlay { position: fixed; inset: 0; background: #000 center center / cover no-repeat; z-index: 9999; overflow: hidden; transition: opacity var(--transition-duration-fade) ease-out; }
+    .animation-overlay.fade-out { opacity: 0; }
+    .radiating-dot { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; border-radius: 50%; background: #fff; transform: translate(-50%, -50%) scale(1); will-change: transform; }
   </style>
 </head>
 <body>
-  <div class="main-container">
-    <div id="main-view" class="main-view">
-      <div id="asset-container"></div>
-    </div>
+  <div id="main-view" class="main-view">
+    <div id="asset-container"></div>
   </div>
-
   <script src="main.js"></script>
 </body>
 </html>

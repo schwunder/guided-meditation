@@ -27,3 +27,6 @@ npm-debug.log*
 
 # Assets
 public/assets/
+
+# Archive
+public/archive/
