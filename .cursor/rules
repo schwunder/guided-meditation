@@ -12,11 +12,11 @@ Interactive guided meditation experience with static HTML sequences, lightweight
 - Follow Biome's recommended rules
 
 ### JavaScript Conventions
-- Keep `public/main.js` focused on orchestration (~200 lines target)
+- `public/main.js` is currently 344 lines (HTML parsing, media cache, stage rendering)
 - Prefer explicit `if` blocks over ternaries for readability
-- Use async/await and async generators for timeline management
+- Use Maps for media caching, data attributes for configuration
 - Minimal logging: only `console.error` for actual failures
-- No dynamic template creation at runtime (use static HTML)
+- No JSON fetching - sequences defined in HTML markup
 
 ### CSS Conventions
 - All styling in CSS, not inline styles or JS mutations
@@ -30,22 +30,37 @@ Interactive guided meditation experience with static HTML sequences, lightweight
 ```
 public/
 ├── index.html              # Main entry point with embedded sequences
-├── main.js                 # Timeline orchestration (~200 lines)
-├── assets/                 # Media assets (checkpoints, transitions, chakras)
-└── sequences/              # Sequence HTML components
+├── main.js                 # Timeline orchestration (344 lines)
+└── assets/                 # Media assets (checkpoints, transitions, chakras)
 
-docs/                       # Documentation
-├── features.md            # Implemented and planned features
+notes/                      # Detailed development documentation
+├── features.md            # Implemented and planned features (including 7-chakra vision)
 ├── fix.md                 # Outstanding fixes
 ├── context.md             # Browser constraints and technical context
-└── cursor-setup.md        # Cursor IDE setup guide
+├── cursor-setup.md        # Cursor IDE setup guide
+└── refactor.md            # Architecture principles and refactor notes
+
+docs/                       # Summary documentation (shorter versions)
+├── fix.md                 # Outstanding fixes summary
+└── refactor.md            # Refactor summary
+
+.claude/
+├── hooks/                  # Automated event hooks
+└── skills/                 # Specialized agent skills
+    └── visualize-architecture/DIAGRAMS.md  # Architecture diagrams
 
 mermaid diagrams/          # Mermaid diagram files (.mmd or .md)
 
 .cursor/                    # Cursor IDE configuration
-.gitignore                  # Git ignore patterns
 biome.json                  # Biome.js configuration
+chakra-sequence-spec.json  # 7-chakra sequence specification (reference)
 ```
+
+### HTML Sequence Structure
+- Sequences defined with `data-sequence-source` and `data-sequence-item` attributes
+- Each sequence has `data-sequence-id` and inline CSS variables for theming
+- Currently 2 sequences: "arrival" (blue/magenta) and "kitchen" (orange/teal)
+- Plan for 7 chakra sequences (see `notes/features.md`)
 
 ### Documentation Files
 - Keep `README.md` in root

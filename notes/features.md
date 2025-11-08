@@ -1,19 +1,20 @@
 ## Implemented Features
 | Area | Highlights |
 | --- | --- |
-| Sequence Flow | `public/sequence.json` enumerates checkpoints and transitions, while `timeline()` in `public/main.js` streams the merged data through an async iterator. Checkpoints still honor `--checkpoint-hold-ms`; transitions rely on video playback end events, and skipped assets are reported through the status store. |
-| Stage Presentation | `createMediaFactory()` preloads and caches `<img>`/`<video>` elements, refreshing `alt` text from metadata. The stage composer clones `<template id="stage">`, fills media/caption/choices slots, and the stage manager toggles `is-active` to let CSS handle fades and cleanup. |
-| Styling Contract | CSS variables (`--transition-duration-fade`, `--checkpoint-hold-ms`, `--accent-hue-*`) in `public/index.html` keep JavaScript in sync. Utility classes (`.radiant-border`, `.caption`, `.choices`) express layout and animations without duplicating rules; hue shifts still flow through `createHueController()`. |
-| Dynamic Hue Accent | `createHueController` tracks checkpoint count and flips `--accent-hue` after the second checkpoint to shift the animated border; `numericCssVariable` reads hue tokens so designers can retune the palette without code. |
-| Asset Library | Media lives under `public/assets/` with subfolders for checkpoints, transitions, chakras, and archived experiments; the media factory URL-encodes asset paths and reuses cached DOM nodes for instant swaps. |
+| Sequence Flow | HTML-embedded sequences via `[data-sequence-source]` and `[data-sequence-item]` attributes. `readTimeline()` in `public/main.js` parses the markup and streams items through a simplified iteration loop. Checkpoints honor per-item `data-hold` or fall back to `--checkpoint-hold-ms`; transitions rely on video playback end events. |
+| Stage Presentation | `ensureMedia()` preloads and caches `<img>`/`<video>` elements in a Map, refreshing `alt` text from data attributes. `renderStage()` creates stage DOM from item data, and `activateStage()` toggles `is-active` to let CSS handle fades and cleanup. |
+| Styling Contract | CSS variables (`--transition-duration-fade`, `--checkpoint-hold-ms`, `--accent-hue-base`, `--accent-hue-shift`) in `public/index.html` keep JavaScript in sync. Each sequence section can define its own hue palette inline. Utility classes (`.radiant-border`, `.caption`, `.choices`) express layout and animations without duplicating rules. |
+| Dynamic Hue Accent | Each `[data-sequence-id]` section defines `--accent-hue-base` and `--accent-hue-shift` inline styles. JavaScript updates `--accent-hue` on `document.documentElement` as the experience progresses, creating smooth color transitions for the radiant border animation. |
+| Asset Library | Media lives under `public/assets/` with subfolders for checkpoints, transitions, chakras, and archived experiments. Asset paths are URL-encoded and referenced via `data-asset` attributes in the HTML markup. |
+| Multiple Sequences | Currently supports 2 sequences: "arrival" (blue/magenta hues) and "kitchen" (orange/teal hues), each defined as `<section data-sequence-id>` with distinct theming. |
 
 ## Planned Features
 
 | Area | Vision |
 | --- | --- |
-| 7-Chakra Daily Sequence | Meditation experience will evolve into 7 distinct HTML component sequences—one for each chakra affirmation (I AM, I FEEL, I DO, I LOVE, I TALK, I SEE, I UNDERSTAND). Each sequence maps to a chakra color (Red, Orange, Yellow, Green, Blue, Indigo, Violet) and daily activity (grounding, stretching, focus work, gratitude, communication, reflection, integration). Currently using JSON data; will transition to 7 hard-coded HTML components that users can eventually choose between based on their daily practice or time of day. |
-| User-Selectable Sequences | Allow users to choose which chakra sequence to experience, either manually or automatically based on time of day. The 7 HTML components will be pre-built but selectively loaded/displayed based on user choice or smart defaults. |
-| Chakra Color Theming | Extend the existing hue controller to map each of the 7 sequences to its corresponding chakra color, creating smooth color transitions that align with the affirmation and activity focus. |
+| 7-Chakra Daily Sequence | Meditation experience will evolve into 7 distinct HTML sequence sections—one for each chakra affirmation (I AM, I FEEL, I DO, I LOVE, I TALK, I SEE, I UNDERSTAND). Each sequence maps to a chakra color (Red, Orange, Yellow, Green, Blue, Indigo, Violet) and daily activity (grounding, stretching, focus work, gratitude, communication, reflection, integration). Currently has 2 sequences in HTML; will expand to 7 sections that users can eventually choose between based on their daily practice or time of day. |
+| User-Selectable Sequences | Allow users to choose which chakra sequence to experience, either manually or automatically based on time of day. The 7 HTML sequences will be pre-built in `index.html` but selectively activated based on user choice or smart defaults. |
+| Chakra Color Theming | Each of the 7 sequences already has inline CSS variable support for custom hues. Extend this pattern to ensure each chakra maps to its corresponding color (Red → Orange → Yellow → Green → Blue → Indigo → Violet), creating smooth color transitions that align with the affirmation and activity focus. |
 
 ### 7-Chakra Sequence Details
 
@@ -47,11 +48,11 @@ Each chakra sequence will incorporate available checkpoint assets to create imme
 - Activity: Close the day with stillness, prayer, or a few silent breaths; integrate what you learned
 - Potential checkpoints: Starry Night Vigil (evening stillness), Rooftop Meditators (contemplation), choice between Sun Spiral Overlook or Lakeside Overlook (peaceful integration)
 
-Each sequence will use the chakra-specific color theming (via CSS custom properties) and incorporate transitions between checkpoints, creating a cohesive daily meditation journey that aligns with the chakra's affirmation and activity focus.
+Each sequence will use the chakra-specific color theming (via CSS custom properties in inline styles) and incorporate transitions between checkpoints, creating a cohesive daily meditation journey that aligns with the chakra's affirmation and activity focus.
 
 ## Potential Future Sequences
 
-Based on available checkpoint metadata, the following sequences could be generated as standalone HTML components:
+Based on available checkpoint metadata, the following sequences could be generated as standalone `<section data-sequence-id>` blocks within `index.html`:
 
 ### Meditation Journey Sequences
 
@@ -94,5 +95,4 @@ Based on available checkpoint metadata, the following sequences could be generat
 - Backyard Reading — Two retreatants unwind on picnic blankets, one journaling and the other reading beneath a sun-dappled canopy
 - Teacher Conversation — Two teachers share an easy smile beside a warmly lit window, ready to continue a heartfelt discussion
 
-These sequences could be generated as static HTML components (similar to the current `index.html` structure) and selected based on user preference, time of day, or meditation focus.
-
+These sequences can be added as new `<section data-sequence-id="...">` blocks in `public/index.html`, each with their own theme CSS variables and checkpoint/transition markup.
