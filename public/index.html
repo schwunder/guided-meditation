@@ -9,6 +9,7 @@
     :root {
       --animation-duration-border: 3s;
       --transition-duration-fade: 0.5s;
+      --checkpoint-hold-ms: 3000ms;
     }
 
     * {
@@ -51,9 +52,23 @@
       height: 100%;
       overflow: hidden;
       z-index: 2;
+    }
+
+    /* Stage elements fade between checkpoints and transitions */
+    .asset-stage {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      opacity: 0;
+      transition: opacity var(--transition-duration-fade) ease-in-out;
+      pointer-events: none;
+    }
+
+    .asset-stage.is-active {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .media-wrapper {
@@ -73,7 +88,13 @@
       display: block;
       width: auto;
       height: auto;
+      max-width: 80vw;
+      max-height: 90vh;
       object-fit: contain;
+    }
+
+    .media-wrapper[data-type="transition"] {
+      animation-duration: calc(var(--animation-duration-border) * 0.75);
     }
 
   </style>

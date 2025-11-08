@@ -1,26 +1,21 @@
 const MEDITATION_SEQUENCE = [
-  { type: 'checkpoint', asset: 'checkpoints/1-image-1.png', duration: 3000 },
+  { type: 'checkpoint', asset: 'checkpoints/1-image-1.png' },
   { type: 'transition', asset: 'transitions/1-video-1.mp4' },
-  { type: 'checkpoint', asset: 'checkpoints/1-image-2.png', duration: 3000 },
+  { type: 'checkpoint', asset: 'checkpoints/1-image-2.png' },
 ];
 
-const MEDIA_SIZING = { maxWidthRatio: 0.8, minPaddingRatio: 0.05 };
-const MEDIA_TYPE_BY_SEQUENCE_ITEM = {
-  checkpoint: 'image',
-  transition: 'video'
-};
 const assetCache = new Map();
 
+const buildAssetUrl = (filename) =>
+  `/assets/${filename.split('/').map(encodeURIComponent).join('/')}`;
 
-const buildAssetUrl = (filename) => `/assets/${filename.split('/').map(encodeURIComponent).join('/')}`;
-
-
-const ensureAssetEntry = (assetPath, mediaType) => {
-  if (assetCache.has(assetPath)) {
-    return assetCache.get(assetPath);
+const ensureMediaEntry = (item) => {
+  if (assetCache.has(item.asset)) {
+    return assetCache.get(item.asset);
   }
 
-  const url = buildAssetUrl(assetPath);
+  const mediaType = item.type === 'transition' ? 'video' : 'image';
+  const url = buildAssetUrl(item.asset);
 
   if (mediaType === 'video') {
     const video = document.createElement('video');
@@ -30,19 +25,16 @@ const ensureAssetEntry = (assetPath, mediaType) => {
     video.src = url;
 
     const ready = new Promise((resolve, reject) => {
-      const cleanup = () => {
-        video.removeEventListener('canplaythrough', onReady);
-        video.removeEventListener('error', onError);
-      };
-
-      const onReady = () => {
-        cleanup();
+      const handleReady = () => {
+        video.removeEventListener('canplaythrough', handleReady);
+        video.removeEventListener('error', handleError);
         resolve(video);
       };
 
-      const onError = () => {
-        cleanup();
-        reject(new Error(`Failed to preload video asset "${assetPath}"`));
+      const handleError = () => {
+        video.removeEventListener('canplaythrough', handleReady);
+        video.removeEventListener('error', handleError);
+        reject(new Error(`Failed to preload video asset "${item.asset}"`));
       };
 
       if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
@@ -50,13 +42,13 @@ const ensureAssetEntry = (assetPath, mediaType) => {
         return;
       }
 
-      video.addEventListener('canplaythrough', onReady, { once: true });
-      video.addEventListener('error', onError, { once: true });
+      video.addEventListener('canplaythrough', handleReady, { once: true });
+      video.addEventListener('error', handleError, { once: true });
       video.load();
     });
 
     const entry = { mediaType, element: video, ready };
-    assetCache.set(assetPath, entry);
+    assetCache.set(item.asset, entry);
     return entry;
   }
 
@@ -65,19 +57,16 @@ const ensureAssetEntry = (assetPath, mediaType) => {
   image.src = url;
 
   const ready = new Promise((resolve, reject) => {
-    const cleanup = () => {
-      image.removeEventListener('load', onLoad);
-      image.removeEventListener('error', onError);
-    };
-
-    const onLoad = () => {
-      cleanup();
+    const handleLoad = () => {
+      image.removeEventListener('load', handleLoad);
+      image.removeEventListener('error', handleError);
       resolve(image);
     };
 
-    const onError = () => {
-      cleanup();
-      reject(new Error(`Failed to preload image asset "${assetPath}"`));
+    const handleError = () => {
+      image.removeEventListener('load', handleLoad);
+      image.removeEventListener('error', handleError);
+      reject(new Error(`Failed to preload image asset "${item.asset}"`));
     };
 
     if (image.complete && image.naturalWidth) {
@@ -85,149 +74,140 @@ const ensureAssetEntry = (assetPath, mediaType) => {
       return;
     }
 
-    image.addEventListener('load', onLoad, { once: true });
-    image.addEventListener('error', onError, { once: true });
+    image.addEventListener('load', handleLoad, { once: true });
+    image.addEventListener('error', handleError, { once: true });
   });
 
   const entry = { mediaType, element: image, ready };
-  assetCache.set(assetPath, entry);
+  assetCache.set(item.asset, entry);
   return entry;
 };
 
+const preloadSequenceAssets = () =>
+  Promise.all(MEDITATION_SEQUENCE.map((item) => ensureMediaEntry(item).ready));
 
-const preloadSequenceAssets = async () => {
-  const preloadPromises = MEDITATION_SEQUENCE.map((item) => {
-    const mediaType = MEDIA_TYPE_BY_SEQUENCE_ITEM[item.type];
-    const entry = ensureAssetEntry(item.asset, mediaType);
-    return entry.ready.catch((error) => {
-      console.error(`Failed to preload ${mediaType} asset "${item.asset}"`, error);
-      throw error;
-    });
-  });
-
-  await Promise.all(preloadPromises);
+const msFromCss = (element, property) => {
+  const raw = getComputedStyle(element).getPropertyValue(property).trim();
+  if (!raw) return 0;
+  if (raw.endsWith('ms')) return parseFloat(raw);
+  if (raw.endsWith('s')) return parseFloat(raw) * 1000;
+  const numeric = parseFloat(raw);
+  return Number.isNaN(numeric) ? 0 : numeric;
 };
 
-const calculateMediaSize = (mediaElement, viewportWidth, viewportHeight) => {
-  const naturalWidth = mediaElement.videoWidth || 
-                       mediaElement.naturalWidth || 
-                       mediaElement.width;
-  const naturalHeight = mediaElement.videoHeight || 
-                        mediaElement.naturalHeight || 
-                        mediaElement.height;
-  if (!naturalWidth || !naturalHeight) return null;
-  const maxWidth = viewportWidth * MEDIA_SIZING.maxWidthRatio;
-  let scale = maxWidth / naturalWidth;
-  let finalWidth = naturalWidth * scale;
-  let finalHeight = naturalHeight * scale;
-  const minPadding = viewportHeight * MEDIA_SIZING.minPaddingRatio;
-  const maxHeight = viewportHeight - (minPadding * 2);
-  if (finalHeight > maxHeight) {
-    scale = maxHeight / naturalHeight;
-    finalWidth = naturalWidth * scale;
-    finalHeight = naturalHeight * scale;
-  }
-  return { width: finalWidth, height: finalHeight };
-};
+const fadeDurationMs = () =>
+  msFromCss(document.documentElement, '--transition-duration-fade');
 
+const buildStage = (item, media) => {
+  const stage = document.createElement('div');
+  stage.className = 'asset-stage';
+  stage.dataset.type = item.type;
 
-const resizeHandlers = new WeakMap();
-
-const applyMediaSizing = (mediaElement) => {
-  const size = calculateMediaSize(mediaElement, window.innerWidth, window.innerHeight);
-  if (size) {
-    mediaElement.style.width = `${size.width}px`;
-    mediaElement.style.height = `${size.height}px`;
-  }
-};
-
-
-const createMediaElement = (assetPath, mediaType) => {
   const wrapper = document.createElement('div');
   wrapper.className = 'media-wrapper';
-  const { element: media } = ensureAssetEntry(assetPath, mediaType);
-  const handleResize = () => {
-    applyMediaSizing(media);
-  };
-  if (mediaType === 'video') {
-    media.muted = true;
-    media.playsInline = true;
-    media.preload = 'auto';
-    media.pause();
-    media.currentTime = 0;
-  } else {
-    media.decoding = 'async';
-  }
-  resizeHandlers.set(wrapper, handleResize);
-  window.addEventListener('resize', handleResize);
+  wrapper.dataset.type = item.type;
   wrapper.appendChild(media);
-  requestAnimationFrame(() => applyMediaSizing(media));
-  return { wrapper, media };
+
+  stage.appendChild(wrapper);
+  return stage;
 };
 
+let activeStage = null;
 
-const clearContainer = (container) => {
-  container.querySelectorAll('.media-wrapper').forEach(wrapper => {
-    const handler = resizeHandlers.get(wrapper);
-    if (handler) {
-      window.removeEventListener('resize', handler);
-      resizeHandlers.delete(wrapper);
-    }
+const scheduleStageRemoval = (stage) => {
+  const duration = fadeDurationMs();
+  if (!duration) {
+    stage.remove();
+    return;
+  }
+
+  const fallback = setTimeout(() => {
+    stage.remove();
+  }, duration);
+
+  stage.addEventListener(
+    'transitionend',
+    () => {
+      clearTimeout(fallback);
+      stage.remove();
+    },
+    { once: true }
+  );
+};
+
+const activateStage = (container, stage) => {
+  if (activeStage) {
+    activeStage.classList.remove('is-active');
+    scheduleStageRemoval(activeStage);
+  }
+
+  container.appendChild(stage);
+  requestAnimationFrame(() => {
+    stage.classList.add('is-active');
   });
-  container.innerHTML = '';
+
+  activeStage = stage;
 };
 
+const resetMedia = (entry) => {
+  if (entry.mediaType === 'video') {
+    entry.element.pause();
+    entry.element.currentTime = 0;
+  }
+};
 
-const playCheckpointItem = async (container, assetPath, duration) => {
-  const { ready } = ensureAssetEntry(assetPath, 'image');
-  await ready;
+const holdForCheckpoint = (stage) => {
+  const duration = msFromCss(stage, '--checkpoint-hold-ms');
+  if (!duration) return Promise.resolve();
+
   return new Promise((resolve) => {
-    clearContainer(container);
-    const { wrapper } = createMediaElement(assetPath, 'image');
-    container.appendChild(wrapper);
     setTimeout(resolve, duration);
   });
 };
 
+const playVideo = (video) =>
+  new Promise((resolve) => {
+    const finish = () => {
+      video.pause();
+      video.removeEventListener('ended', finish);
+      resolve();
+    };
 
-const playTransitionItem = async (container, assetPath) => {
-  const { ready } = ensureAssetEntry(assetPath, 'video');
-  await ready;
-  return new Promise((resolve) => {
-    clearContainer(container);
-    const { wrapper, media: video } = createMediaElement(assetPath, 'video');
-    container.appendChild(wrapper);
-    video.addEventListener('ended', resolve, { once: true });
-    const playPromise = video.play();
-    if (playPromise && typeof playPromise.catch === 'function') {
-      playPromise.catch((error) => {
-        console.warn('Transition video failed to autoplay', error);
-        resolve();
-      });
+    video.addEventListener('ended', finish, { once: true });
+    const attempt = video.play();
+    if (attempt && typeof attempt.catch === 'function') {
+      attempt.catch(finish);
     }
   });
+
+const waitForStage = (stage, entry) =>
+  entry.mediaType === 'video'
+    ? playVideo(entry.element)
+    : holdForCheckpoint(stage);
+
+const presentSequenceItem = async (container, item) => {
+  const entry = ensureMediaEntry(item);
+  await entry.ready;
+
+  resetMedia(entry);
+
+  const stage = buildStage(item, entry.element);
+  activateStage(container, stage);
+
+  await waitForStage(stage, entry);
 };
 
-
-const SEQUENCE_HANDLERS = {
-  checkpoint: playCheckpointItem,
-  transition: playTransitionItem
-};
-
-const playSequence = async (container) => {
-  clearContainer(container);
+const runSequence = async (container) => {
   for (const item of MEDITATION_SEQUENCE) {
-    await SEQUENCE_HANDLERS[item.type](container, item.asset, item.duration);
+    await presentSequenceItem(container, item);
   }
-  console.log('Meditation sequence complete');
 };
-
 
 const init = async () => {
   await preloadSequenceAssets();
-  await playSequence(document.getElementById('asset-container'));
+  const container = document.getElementById('asset-container');
+  await runSequence(container);
 };
-
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
