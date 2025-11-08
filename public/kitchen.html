@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kitchen Return Sequence</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #0c0804;
+        color: #fdf7f1;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .sequence {
+        display: grid;
+        gap: 16px;
+      }
+
+      .sequence-item {
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .sequence-item__meta {
+        font-size: 0.95rem;
+        opacity: 0.85;
+      }
+
+      .sequence-item__choices {
+        margin: 8px 0 0;
+        padding-left: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <section
+      class="sequence"
+      data-sequence-id="kitchen"
+      style="--accent-hue-base:38; --accent-hue-shift:168;"
+    >
+      <article
+        class="sequence-item"
+        data-sequence-item
+        data-type="checkpoint"
+        data-asset="checkpoints/choice-kitchen-welcome.jpg"
+        data-caption="Kitchen welcome"
+        data-alt="A cheerful host in a patterned coat offers a warm bowl outside a rustic kitchen cabin in the cool morning air."
+      >
+        <p class="sequence-item__meta">
+          Arrive in the kitchen, welcomed by warmth and the scent of tea.
+        </p>
+        <ul class="sequence-item__choices" data-choice-list>
+          <li>Choice A: Share tea with the host.</li>
+          <li>Choice B: Carry bowls to the table.</li>
+        </ul>
+      </article>
+
+      <article
+        class="sequence-item"
+        data-sequence-item
+        data-type="transition"
+        data-asset="transitions/1-video-1.mp4"
+        data-caption="Things change"
+        data-alt="A glowing ripple of light guides you between gathering spaces."
+      >
+        <p class="sequence-item__meta">
+          Feel the energy rotate as the scene shifts once more.
+        </p>
+      </article>
+
+      <article
+        class="sequence-item"
+        data-sequence-item
+        data-type="checkpoint"
+        data-asset="checkpoints/choice-steakhouse-conversation.jpg"
+        data-caption="Evening reflections"
+        data-alt="A smiling friend points across a candlelit table set with steak, red wine, and notebooks ready for a lively chat."
+      >
+        <p class="sequence-item__meta">
+          Settle into conversation and notice the choices ahead.
+        </p>
+        <ul class="sequence-item__choices" data-choice-list>
+          <li>Choice A: Read in the backyard.</li>
+          <li>Choice B: Go to a workshop.</li>
+        </ul>
+      </article>
+    </section>
+  </body>
+</html>
+

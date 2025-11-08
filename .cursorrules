@@ -1,0 +1,163 @@
+# Cursor Rules for Guided Meditation Project
+
+## Project Overview
+Interactive guided meditation experience with static HTML sequences, lightweight CSS, and a lean JavaScript controller. Uses Bun server, Biome.js for linting/formatting, and Mermaid for diagrams.
+
+## Code Style & Formatting
+
+### Biome.js Configuration
+- Use Biome.js for linting and formatting (configured in `biome.json`)
+- Indent style: spaces (2 spaces)
+- Line width: 100 characters
+- Follow Biome's recommended rules
+
+### JavaScript Conventions
+- Keep `public/main.js` focused on orchestration (~200 lines target)
+- Prefer explicit `if` blocks over ternaries for readability
+- Use async/await and async generators for timeline management
+- Minimal logging: only `console.error` for actual failures
+- No dynamic template creation at runtime (use static HTML)
+
+### CSS Conventions
+- All styling in CSS, not inline styles or JS mutations
+- Use CSS custom properties for timing and theming
+- Utility classes for common patterns (`.radiant-border`, `.caption`, `.choices`)
+- CSS variables contract: `--transition-duration-fade`, `--checkpoint-hold-ms`, `--accent-hue-*`
+
+## File Organization
+
+### Project Structure
+```
+public/
+├── index.html              # Main entry point with embedded sequences
+├── main.js                 # Timeline orchestration (~200 lines)
+├── assets/                 # Media assets (checkpoints, transitions, chakras)
+└── sequences/              # Sequence HTML components
+
+docs/                       # Documentation
+├── features.md            # Implemented and planned features
+├── fix.md                 # Outstanding fixes
+├── context.md             # Browser constraints and technical context
+└── cursor-setup.md        # Cursor IDE setup guide
+
+mermaid diagrams/          # Mermaid diagram files (.mmd or .md)
+
+.cursor/                    # Cursor IDE configuration
+.gitignore                  # Git ignore patterns
+biome.json                  # Biome.js configuration
+```
+
+### Documentation Files
+- Keep `README.md` in root
+- Move project docs to `docs/` folder
+- Use lowercase filenames for consistency (`context.md` not `CONTEXT.md`)
+- Mermaid diagrams go in `mermaid diagrams/` folder
+
+## Git & Version Control
+
+### .gitignore Patterns
+- System files: `.DS_Store`, `Thumbs.db`, etc.
+- IDE files: `.vscode/`, `.idea/`, swap files
+- Dependencies: `node_modules/`
+- Environment: `.env`, `.env.local`
+- Assets: `public/assets/` (if large media files)
+- Archive: `public/archive/`
+- Claude config: `.claude/`
+
+## Mermaid Diagrams
+
+### Diagram Support
+- Store Mermaid diagrams in `mermaid diagrams/` folder
+- Use `.mmd` extension for pure Mermaid files
+- Can embed in `.md` files using ```mermaid code blocks
+- Reference diagrams in documentation with relative paths
+
+### Common Diagram Types
+- Architecture diagrams (component interactions)
+- Data flow diagrams (timeline iterator, media factory)
+- Stage lifecycle diagrams
+- Sequence flowcharts
+
+## Development Workflow
+
+### Static HTML Approach
+- Sequences are hard-coded in `public/index.html`
+- No JSON fetches or template cloning at runtime
+- Update checkpoint copy, media references, or layout directly in HTML
+- CSS handles all visual transitions and animations
+
+### Error Handling
+- Quiet error handling by design
+- Only log with `console.error` when action truly fails
+- Missing elements, media load failures → log and continue
+- No verbose success banners or diagnostics
+
+### Server Expectations
+- `server.js` serves static files only
+- No dynamic endpoints or metadata JSON
+- Bun-based HTTP server
+
+## Browser Compatibility
+
+### Target Browsers
+- Chrome/Edge (latest)
+- Firefox (latest)
+- Safari (latest macOS/iOS)
+
+### Requirements
+- ES2020 support (async generators, optional chaining)
+- CSS custom properties
+- HTML5 video/audio
+- Template element
+- Fetch API
+
+### Edge Cases
+- Video autoplay policies (requires muted + user gesture fallback)
+- Large video preloading (network dependent)
+- CSS backdrop-filter support (Safari needs `-webkit-`)
+- Mobile video playback (needs `playsinline` attribute)
+
+## Code Quality
+
+### When Editing
+- Keep `public/main.js` under ~200 lines
+- Extract complex logic to CSS/HTML when possible
+- Prefer CSS classes over inline styles
+- Use utility classes for common patterns
+- Maintain CSS variables contract
+
+### Linting
+- Biome.js runs automatically (if configured)
+- Follow recommended rules
+- Fix linting errors before committing
+
+## Asset Management
+
+### Asset Organization
+```
+public/assets/
+├── checkpoints/     # Still images for meditation pauses
+├── transitions/     # Video clips between checkpoints
+├── chakras/         # Chakra-specific imagery
+└── archive/         # Experimental or unused assets
+```
+
+### Naming Convention
+- Format: `{type}-{subject}.{ext}`
+- Examples:
+  - `image-sunrise-meditation-room.png`
+  - `choice-communal-beach-circle.jpg`
+  - `1-video-1.mp4` (transitions)
+
+## Cursor IDE Integration
+
+### Recommended Extensions
+- Biome formatter (for code formatting)
+- Mermaid viewer (for diagram preview)
+- File folding extension (for code organization)
+- See `docs/cursor-setup.md` for complete list
+
+### File Folding
+- Configure Cursor to fold long files automatically
+- Use folding for large HTML sections, CSS blocks, and documentation
+

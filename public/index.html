@@ -192,14 +192,112 @@
 </head>
 <body>
   <main id="experience" class="experience-shell">
-    <div id="asset-container" class="asset-container" aria-live="off"></div>
     <div
-      id="status-banner"
-      class="status-banner"
-      role="status"
-      aria-live="polite"
+      id="sequence-source"
+      data-sequence-source
+      aria-hidden="true"
       hidden
-    ></div>
+    >
+      <!-- See /public/arrival.html -->
+      <section
+        class="sequence"
+        data-sequence-id="arrival"
+        style="--accent-hue-base:215; --accent-hue-shift:320;"
+      >
+        <article
+          data-sequence-item
+          data-type="checkpoint"
+          data-asset="checkpoints/image-sunrise-meditation-room.png"
+          data-caption="Meditation room"
+          data-alt="Dawn light fills a tidy meditation room with four cushions arranged on the wooden floor and a digital clock glowing 6:00."
+        >
+          <p data-sequence-notes>
+            Begin in stillness as the sun rises across the meditation room.
+          </p>
+        </article>
+
+        <article
+          data-sequence-item
+          data-type="transition"
+          data-asset="transitions/1-video-1.mp4"
+          data-caption="Things change"
+          data-alt="Abstract particles of light converge and dissolve, signaling a shift between scenes."
+        >
+          <p data-sequence-notes>
+            Let movement carry you toward the next space.
+          </p>
+        </article>
+
+        <article
+          data-sequence-item
+          data-type="checkpoint"
+          data-asset="checkpoints/choice-communal-beach-circle.jpg"
+          data-caption="Communal meditation"
+          data-alt="Friends sit shoulder to shoulder on a sandy beach, laughing together as the forest rises behind them."
+        >
+          <p data-sequence-notes>
+            Notice how the group gathers, inviting you to take the next step.
+          </p>
+          <ul data-choice-list>
+            <li>Choice A: Go to the kitchen.</li>
+            <li>Choice B: Go to the bathroom.</li>
+          </ul>
+        </article>
+      </section>
+
+      <!-- See /public/kitchen.html -->
+      <section
+        class="sequence"
+        data-sequence-id="kitchen"
+        style="--accent-hue-base:38; --accent-hue-shift:168;"
+      >
+        <article
+          data-sequence-item
+          data-type="checkpoint"
+          data-asset="checkpoints/choice-kitchen-welcome.jpg"
+          data-caption="Kitchen welcome"
+          data-alt="A cheerful host in a patterned coat offers a warm bowl outside a rustic kitchen cabin in the cool morning air."
+        >
+          <p data-sequence-notes>
+            Arrive in the kitchen, welcomed by warmth and the scent of tea.
+          </p>
+          <ul data-choice-list>
+            <li>Choice A: Share tea with the host.</li>
+            <li>Choice B: Carry bowls to the table.</li>
+          </ul>
+        </article>
+
+        <article
+          data-sequence-item
+          data-type="transition"
+          data-asset="transitions/1-video-1.mp4"
+          data-caption="Things change"
+          data-alt="A glowing ripple of light guides you between gathering spaces."
+        >
+          <p data-sequence-notes>
+            Feel the energy rotate as the scene shifts once more.
+          </p>
+        </article>
+
+        <article
+          data-sequence-item
+          data-type="checkpoint"
+          data-asset="checkpoints/choice-steakhouse-conversation.jpg"
+          data-caption="Evening reflections"
+          data-alt="A smiling friend points across a candlelit table set with steak, red wine, and notebooks ready for a lively chat."
+        >
+          <p data-sequence-notes>
+            Settle into conversation and notice the choices ahead.
+          </p>
+          <ul data-choice-list>
+            <li>Choice A: Read in the backyard.</li>
+            <li>Choice B: Go to a workshop.</li>
+          </ul>
+        </article>
+      </section>
+    </div>
+
+    <div id="asset-container" class="asset-container" aria-live="off"></div>
     <template id="stage">
       <div class="asset-stage" data-stage>
         <figure class="media-frame radiant-border" data-stage-figure>

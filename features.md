@@ -1,8 +1,0 @@
-## Implemented Features
-| Area | Highlights |
-| --- | --- |
-| Sequence Flow | `public/sequence.json` enumerates checkpoints and transitions, while `timeline()` in `public/main.js` streams the merged data through an async iterator. Checkpoints still honor `--checkpoint-hold-ms`; transitions rely on video playback end events, and skipped assets are reported through the status store. |
-| Stage Presentation | `createMediaFactory()` preloads and caches `<img>`/`<video>` elements, refreshing `alt` text from metadata. The stage composer clones `<template id="stage">`, fills media/caption/choices slots, and the stage manager toggles `is-active` to let CSS handle fades and cleanup. |
-| Styling Contract | CSS variables (`--transition-duration-fade`, `--checkpoint-hold-ms`, `--accent-hue-*`) in `public/index.html` keep JavaScript in sync. Utility classes (`.radiant-border`, `.caption`, `.choices`) express layout and animations without duplicating rules; hue shifts still flow through `createHueController()`. |
-| Dynamic Hue Accent | `createHueController` tracks checkpoint count and flips `--accent-hue` after the second checkpoint to shift the animated border; `numericCssVariable` reads hue tokens so designers can retune the palette without code. |
-| Asset Library | Media lives under `public/assets/` with subfolders for checkpoints, transitions, chakras, and archived experiments; the media factory URL-encodes asset paths and reuses cached DOM nodes for instant swaps. |
