@@ -3,11 +3,17 @@
 - Architecture uses three layers: asset loader (media readiness), stage manager (DOM swaps + transitions), sequence controller (timeline flow). Keep notes aligned with that terminology for other agents.
 - CSS variables (`--transition-duration-fade`, `--checkpoint-hold-ms`) remain the timing contract; JS reads them, so update both sides in sync.
 
-## Sequence presentation
+## Completed sequence work
 
-- Sequence stays in one stage tree: `presentSequenceItem` requests media from the asset loader, then hands it to `activateStage` for swap/fade.
-- Checkpoint dwell comes from `--checkpoint-hold-ms`; transitions conclude when the cached `<video>` fires `ended`.
-- Stage manager listens for `transitionend` with a timeout fallback to guarantee teardown.
+- Unified everything under `presentSequenceItem`, reusing the stage manager for checkpoints and transitions.
+- Shifted dwell/advance timing to CSS variables (`--checkpoint-hold-ms`, `--transition-duration-fade`) so JS just reads the contract.
+- Removed bespoke helpers (`playCheckpointItem`, `playTransitionItem`, `SEQUENCE_HANDLERS`) in favor of the stage manager orchestrating all media swaps.
+
+## Upcoming: extended hue sequence
+
+- Stretch the timeline to: checkpoint → transition → checkpoint → transition → checkpoint.
+- After the second checkpoint, flip a CSS hue variable so the border/glow accent shifts for the remaining steps.
+- Keep captions and asset loader behavior unchanged; only the stage visuals and color accent respond to the new hue.
 
 ## Captions
 

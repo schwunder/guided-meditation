@@ -10,6 +10,9 @@
       --animation-duration-border: 3s;
       --transition-duration-fade: 0.5s;
       --checkpoint-hold-ms: 3000ms;
+      --accent-hue-base: 215;
+      --accent-hue-shift: 320;
+      --accent-hue: var(--accent-hue-base);
     }
 
     * {
@@ -25,14 +28,14 @@
 
     @keyframes radiateBorder {
       0%, 100% {
-        box-shadow: 0 0 1.5vmax 0 rgba(0, 100, 255, 0.45),
-                    0 0 3vmax 0 rgba(0, 100, 255, 0.3),
-                    0 0 4.5vmax 0 rgba(0, 100, 255, 0.15);
+        box-shadow: 0 0 1.5vmax 0 hsla(var(--accent-hue), 85%, 55%, 0.45),
+                    0 0 3vmax 0 hsla(var(--accent-hue), 85%, 55%, 0.3),
+                    0 0 4.5vmax 0 hsla(var(--accent-hue), 85%, 55%, 0.15);
       }
       50% {
-        box-shadow: 0 0 12vmax 6vmax rgba(0, 100, 255, 0.55),
-                    0 0 18vmax 9vmax rgba(0, 100, 255, 0.35),
-                    0 0 26vmax 13vmax rgba(0, 100, 255, 0.2);
+        box-shadow: 0 0 12vmax 6vmax hsla(var(--accent-hue), 85%, 55%, 0.55),
+                    0 0 18vmax 9vmax hsla(var(--accent-hue), 85%, 55%, 0.35),
+                    0 0 26vmax 13vmax hsla(var(--accent-hue), 85%, 55%, 0.2);
       }
     }
 
@@ -77,7 +80,7 @@
       width: auto;
       height: auto;
       padding: 12px;
-      border: 3px solid rgba(0, 100, 255, 0.45);
+      border: 3px solid hsla(var(--accent-hue), 85%, 55%, 0.45);
       border-radius: 18px;
       background: rgba(0, 0, 0, 0.2);
       animation: radiateBorder var(--animation-duration-border) ease-in-out infinite;

@@ -32,34 +32,6 @@ const MEDITATION_SEQUENCE = [
       'Choice B: Go to a workshop.',
     ],
   },
-  {
-    type: 'transition',
-    asset: 'transitions/1-video-1.mp4',
-    caption: 'Things change',
-  },
-  {
-    type: 'checkpoint',
-    asset: 'checkpoints/1-image-10.jpg',
-    caption: 'I love — Have a chat with one of the meditation teachers.',
-    choices: [
-      'Choice A: Join the chaplain study hall.',
-      'Choice B: Continue the conversation.',
-    ],
-  },
-  {
-    type: 'transition',
-    asset: 'transitions/1-video-1.mp4',
-    caption: 'Things change',
-  },
-  {
-    type: 'checkpoint',
-    asset: 'checkpoints/1-image-12.jpg',
-    caption: 'I talk',
-    choices: [
-      'Choice A: Discuss meditation apps at Casa Chola with Tessa over steak.',
-      'Choice B: Go on a hike with Consciousness on the eightfold path.',
-    ],
-  },
 ];
 
 const assetCache = new Map();
@@ -155,6 +127,19 @@ const msFromCss = (element, property) => {
 
 const fadeDurationMs = () =>
   msFromCss(document.documentElement, '--transition-duration-fade');
+
+const numericCssVariable = (property, fallback = 0) => {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue(property)
+    .trim();
+
+  if (!raw) {
+    return fallback;
+  }
+
+  const numeric = parseFloat(raw);
+  return Number.isNaN(numeric) ? fallback : numeric;
+};
 
 const createCaptionController = () => {
   const container = document.getElementById('caption-container');
@@ -363,8 +348,44 @@ const presentSequenceItem = async (container, caption, item) => {
   await waitForStage(stage, entry);
 };
 
+const createHueController = () => {
+  const root = document.documentElement;
+  const baseHue = numericCssVariable('--accent-hue-base', 215);
+  const shiftHue = numericCssVariable('--accent-hue-shift', baseHue);
+  let checkpointCount = 0;
+  let useShift = false;
+
+  const applyHue = (value) => {
+    root.style.setProperty('--accent-hue', `${value}`);
+  };
+
+  return {
+    reset() {
+      checkpointCount = 0;
+      useShift = false;
+      applyHue(baseHue);
+    },
+    willPresent(item) {
+      applyHue(useShift ? shiftHue : baseHue);
+
+      if (item.type !== 'checkpoint') {
+        return;
+      }
+
+      checkpointCount += 1;
+      if (checkpointCount === 2) {
+        useShift = true;
+      }
+    },
+  };
+};
+
 const runSequence = async (container, caption) => {
+  const hueController = createHueController();
+  hueController.reset();
+
   for (const item of MEDITATION_SEQUENCE) {
+    hueController.willPresent(item);
     await presentSequenceItem(container, caption, item);
   }
 };
