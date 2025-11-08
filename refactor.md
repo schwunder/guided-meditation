@@ -1,10 +1,4 @@
 # Refactor Practices
-
-- Flow stays declarative: `runSequence` steps through the sequence, `presentSequenceItem` is the sole presenter.
-- CSS owns dwell + fade timing via custom properties; JS just reads `--checkpoint-hold-ms` / `--transition-duration-fade`.
-- Keep stage swaps in one place (`activateStage`) so fade removal + state reset never spread out.
-- Cache DOM elements with `ensureMediaEntry` to avoid rebuffering, but always `resetMedia` before activation.
-- Stage removal waits on the CSS fade duration so JS and transitions never drift apart.
-- Element reuse beats recreation for seamless transitions—only drop reuse if artifacts return.
-- Prefer CSS sizing limits (viewport ratios) over JS resize listeners unless content truly needs script control.
+- **Guardrails from previous passes** — keep flow declarative so `runSequence` steps the sequence and `presentSequenceItem` stays the sole presenter; let CSS own dwell and fade timing via `--checkpoint-hold-ms` and `--transition-duration-fade`, with JavaScript reading them only; centralize stage swaps in `activateStage` so fade removal and state reset never scatter; cache DOM elements with `ensureMediaEntry`, calling `resetMedia` before activation; wait for the CSS fade duration before removing stages so JS and transitions stay aligned; favor element reuse over recreation unless artifacts resurface; use CSS sizing limits (viewport ratios) over JS resize listeners unless script control is essential.
+- **Next refactor targets** — extend `buildStage` to accept an options object (media element plus metadata) so alt text and caption overrides remain localized; wrap `preloadSequenceAssets()` and `runSequence()` in an error boundary that renders a user-facing fallback when assets fail; generalize the Bun dev server to serve any file under `public/`, eliminating bespoke cases as JSON/audio assets appear; capture stage lifecycle metrics (e.g., CSS fade vs. JS fallback deltas) so regressions surface during refactors.
 

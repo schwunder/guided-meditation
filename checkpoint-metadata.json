@@ -1,0 +1,101 @@
+[
+  {
+    "filename": "image-sunrise-meditation-room.png",
+    "asset_type": "image",
+    "short_name": "sunrise-meditation-room",
+    "title": "Sunrise Meditation Room",
+    "description": "Dawn light fills a tidy meditation room with four cushions arranged on the wooden floor and a digital clock glowing 6:00."
+  },
+  {
+    "filename": "image-teachers-portrait.jpg",
+    "asset_type": "image",
+    "short_name": "teachers-portrait",
+    "title": "Meditation Teachers Portrait",
+    "description": "Two meditation teachers sit cross-legged on a sofa, framed by a window of swirling pastel light."
+  },
+  {
+    "filename": "image-breath-practice-circle.png",
+    "asset_type": "image",
+    "short_name": "breath-practice-circle",
+    "title": "Breath Practice Circle",
+    "description": "A cozy practice room where several people meditate together, guiding their breath with alternate-nostril hand mudras."
+  },
+  {
+    "filename": "choice-chaplain-study-hall.jpg",
+    "asset_type": "choice",
+    "short_name": "chaplain-study-hall",
+    "title": "Chaplain Study Hall",
+    "description": "Haloed practitioners meditate in rows before a golden hilltop chapel, bathed in soft morning light."
+  },
+  {
+    "filename": "image-starry-night-vigil.jpg",
+    "asset_type": "image",
+    "short_name": "starry-night-vigil",
+    "title": "Starry Night Vigil",
+    "description": "A guide stands before a sea of reclining seekers beneath a night sky alive with swirling stars and candlelight."
+  },
+  {
+    "filename": "image-sun-spiral-overlook.jpg",
+    "asset_type": "image",
+    "short_name": "sun-spiral-overlook",
+    "title": "Sun Spiral Overlook",
+    "description": "Hundreds meditate on a hillside overlooking a lakeside town while a fiery spiral sunset blooms overhead."
+  },
+  {
+    "filename": "image-rooftop-meditators.jpg",
+    "asset_type": "image",
+    "short_name": "rooftop-meditators",
+    "title": "Rooftop Meditators",
+    "description": "Meditators sit on rooftops across a twilight village as a luminous spiral hovers in the deep-blue sky."
+  },
+  {
+    "filename": "image-lakeside-overlook.jpg",
+    "asset_type": "image",
+    "short_name": "lakeside-overlook",
+    "title": "Lakeside Overlook",
+    "description": "A sweeping aerial view of a lakeside town, winding shoreline roads, and boats tracing gentle patterns in the water."
+  },
+  {
+    "filename": "choice-communal-beach-circle.jpg",
+    "asset_type": "choice",
+    "short_name": "communal-beach-circle",
+    "title": "Communal Beach Circle",
+    "description": "Friends sit shoulder to shoulder on a sandy beach, laughing together as the forest rises behind them."
+  },
+  {
+    "filename": "choice-steakhouse-conversation.jpg",
+    "asset_type": "choice",
+    "short_name": "steakhouse-conversation",
+    "title": "Steakhouse Conversation",
+    "description": "A smiling friend points across a candlelit table set with steak, red wine, and notebooks ready for a lively chat."
+  },
+  {
+    "filename": "choice-kitchen-welcome.jpg",
+    "asset_type": "choice",
+    "short_name": "kitchen-welcome",
+    "title": "Kitchen Welcome",
+    "description": "A cheerful host in a patterned coat offers a warm bowl outside a rustic kitchen cabin in the cool morning air."
+  },
+  {
+    "filename": "choice-workshop-presentation.jpg",
+    "asset_type": "choice",
+    "short_name": "workshop-presentation",
+    "title": "Workshop Presentation",
+    "description": "A presenter introduces the Meditation Research Program to an engaged audience in a vivid, lantern-lit hall."
+  },
+  {
+    "filename": "choice-backyard-reading.jpg",
+    "asset_type": "choice",
+    "short_name": "backyard-reading",
+    "title": "Backyard Reading",
+    "description": "Two retreatants unwind on picnic blankets, one journaling and the other reading beneath a sun-dappled canopy."
+  },
+  {
+    "filename": "choice-teacher-conversation.jpg",
+    "asset_type": "choice",
+    "short_name": "teacher-conversation",
+    "title": "Teacher Conversation",
+    "description": "Two teachers share an easy smile beside a warmly lit window, ready to continue a heartfelt discussion."
+  }
+]
+

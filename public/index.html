@@ -57,6 +57,28 @@
       z-index: 2;
     }
 
+    .status-banner {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      padding: 12px 18px;
+      max-width: min(78vw, 640px);
+      border-radius: 12px;
+      background: rgba(24, 32, 42, 0.85);
+      color: #f8faff;
+      font-size: clamp(0.95rem, 0.6vw + 0.9rem, 1.1rem);
+      line-height: 1.4;
+      text-align: center;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+      z-index: 3;
+    }
+
+    .status-banner.is-visible {
+      display: block;
+    }
+
     /* Stage elements fade between checkpoints and transitions */
     .asset-stage {
       position: absolute;
@@ -76,13 +98,18 @@
 
     .media-wrapper {
       position: relative;
-      display: inline-block;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 20px;
       width: auto;
       height: auto;
-      padding: 12px;
+      margin: 0;
+      padding: 16px 18px 24px;
       border: 3px solid hsla(var(--accent-hue), 85%, 55%, 0.45);
       border-radius: 18px;
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.24);
       animation: radiateBorder var(--animation-duration-border) ease-in-out infinite;
     }
 
@@ -91,8 +118,8 @@
       display: block;
       width: auto;
       height: auto;
-      max-width: 80vw;
-      max-height: 90vh;
+      max-width: 78vw;
+      max-height: 68vh;
       object-fit: contain;
     }
 
@@ -101,41 +128,38 @@
     }
 
     .caption-container {
-      position: absolute;
-      bottom: 6vh;
-      left: 50%;
-      transform: translateX(-50%);
-      max-width: min(80vw, 720px);
-      width: calc(100vw - 32px);
-      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      width: min(78vw, 680px);
+      padding: 16px 22px;
       border-radius: 16px;
-      background: rgba(0, 0, 0, 0.35);
-      color: rgba(255, 255, 255, 0.85);
+      background: rgba(0, 0, 0, 0.42);
+      color: #f5f7ff;
       text-align: center;
       line-height: 1.5;
       font-size: clamp(1rem, 0.75vw + 0.95rem, 1.3rem);
-      opacity: 0;
-      transition: opacity var(--transition-duration-fade) ease-in-out;
-      pointer-events: none;
       backdrop-filter: blur(8px);
-    }
-
-    .caption-container.is-active {
-      opacity: 1;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
     }
 
     .caption-text {
       margin: 0;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
+      -webkit-text-stroke: 0.35px rgba(0, 0, 0, 0.55);
     }
 
     .caption-choices {
       list-style: none;
       padding: 0;
-      margin: 18px 0 0;
+      margin: 0;
       display: grid;
       gap: 10px;
       font-size: clamp(0.95rem, 0.65vw + 0.9rem, 1.15rem);
-      color: rgba(255, 255, 255, 0.9);
+      color: rgba(242, 245, 255, 0.95);
     }
 
     .caption-container:not(.has-choices) .caption-choices {
@@ -147,10 +171,13 @@
 <body>
   <div id="main-view" class="main-view">
     <div id="asset-container"></div>
-    <div id="caption-container" class="caption-container">
-      <p class="caption-text" data-role="caption-text"></p>
-      <ul class="caption-choices" data-role="caption-choices"></ul>
-    </div>
+    <div
+      id="status-banner"
+      class="status-banner"
+      role="status"
+      aria-live="polite"
+      hidden
+    ></div>
   </div>
   <script src="main.js"></script>
 </body>

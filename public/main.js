@@ -1,7 +1,7 @@
 const MEDITATION_SEQUENCE = [
   {
     type: 'checkpoint',
-    asset: 'checkpoints/1-image-1.png',
+    asset: 'checkpoints/image-sunrise-meditation-room.png',
     caption: 'Meditation room',
   },
   {
@@ -11,7 +11,7 @@ const MEDITATION_SEQUENCE = [
   },
   {
     type: 'checkpoint',
-    asset: 'checkpoints/1-image-8.jpg',
+    asset: 'checkpoints/choice-communal-beach-circle.jpg',
     caption: 'Communal meditation',
     choices: [
       'Choice A: Go to the kitchen.',
@@ -25,7 +25,7 @@ const MEDITATION_SEQUENCE = [
   },
   {
     type: 'checkpoint',
-    asset: 'checkpoints/1-image-9.jpg',
+    asset: 'checkpoints/choice-steakhouse-conversation.jpg',
     caption: 'I do',
     choices: [
       'Choice A: Read in the backyard.',
@@ -33,6 +33,95 @@ const MEDITATION_SEQUENCE = [
     ],
   },
 ];
+
+const MEDIA_METADATA = {
+  'checkpoints/image-sunrise-meditation-room.png': {
+    title: 'Sunrise Meditation Room',
+    description:
+      'Dawn light fills a tidy meditation room with four cushions arranged on the wooden floor and a digital clock glowing 6:00.',
+  },
+  'checkpoints/image-teachers-portrait.jpg': {
+    title: 'Meditation Teachers Portrait',
+    description:
+      'Two meditation teachers sit cross-legged on a sofa, framed by a window of swirling pastel light.',
+  },
+  'checkpoints/image-breath-practice-circle.png': {
+    title: 'Breath Practice Circle',
+    description:
+      'A cozy practice room where several people meditate together, guiding their breath with alternate-nostril hand mudras.',
+  },
+  'checkpoints/choice-chaplain-study-hall.jpg': {
+    title: 'Chaplain Study Hall',
+    description:
+      'Haloed practitioners meditate in rows before a golden hilltop chapel, bathed in soft morning light.',
+  },
+  'checkpoints/image-starry-night-vigil.jpg': {
+    title: 'Starry Night Vigil',
+    description:
+      'A guide stands before a sea of reclining seekers beneath a night sky alive with swirling stars and candlelight.',
+  },
+  'checkpoints/image-sun-spiral-overlook.jpg': {
+    title: 'Sun Spiral Overlook',
+    description:
+      'Hundreds meditate on a hillside overlooking a lakeside town while a fiery spiral sunset blooms overhead.',
+  },
+  'checkpoints/image-rooftop-meditators.jpg': {
+    title: 'Rooftop Meditators',
+    description:
+      'Meditators sit on rooftops across a twilight village as a luminous spiral hovers in the deep-blue sky.',
+  },
+  'checkpoints/image-lakeside-overlook.jpg': {
+    title: 'Lakeside Overlook',
+    description:
+      'A sweeping aerial view of a lakeside town, winding shoreline roads, and boats tracing gentle patterns in the water.',
+  },
+  'checkpoints/choice-communal-beach-circle.jpg': {
+    title: 'Communal Beach Circle',
+    description:
+      'Friends sit shoulder to shoulder on a sandy beach, laughing together as the forest rises behind them.',
+  },
+  'checkpoints/choice-steakhouse-conversation.jpg': {
+    title: 'Steakhouse Conversation',
+    description:
+      'A smiling friend points across a candlelit table set with steak, red wine, and notebooks ready for a lively chat.',
+  },
+  'checkpoints/choice-kitchen-welcome.jpg': {
+    title: 'Kitchen Welcome',
+    description:
+      'A cheerful host in a patterned coat offers a warm bowl outside a rustic kitchen cabin in the cool morning air.',
+  },
+  'checkpoints/choice-workshop-presentation.jpg': {
+    title: 'Workshop Presentation',
+    description:
+      'A presenter introduces the Meditation Research Program to an engaged audience in a vivid, lantern-lit hall.',
+  },
+  'checkpoints/choice-backyard-reading.jpg': {
+    title: 'Backyard Reading',
+    description:
+      'Two retreatants unwind on picnic blankets, one journaling and the other reading beneath a sun-dappled canopy.',
+  },
+  'checkpoints/choice-teacher-conversation.jpg': {
+    title: 'Teacher Conversation',
+    description:
+      'Two teachers share an easy smile beside a warmly lit window, ready to continue a heartfelt discussion.',
+  },
+};
+
+const getMetadataForItem = (item) => MEDIA_METADATA[item.asset];
+
+const altTextForItem = (item) => {
+  const metadata = getMetadataForItem(item);
+  if (metadata) {
+    if (metadata.description && metadata.description.trim()) {
+      return metadata.description;
+    }
+    if (metadata.title && metadata.title.trim()) {
+      return metadata.title;
+    }
+  }
+
+  return item.caption ?? '';
+};
 
 const assetCache = new Map();
 
@@ -54,7 +143,9 @@ const ensureMediaEntry = (item) => {
     video.preload = 'auto';
     video.src = url;
 
-    const ready = new Promise((resolve, reject) => {
+    const entry = { mediaType, element: video, error: null };
+
+    entry.ready = new Promise((resolve, reject) => {
       const handleReady = () => {
         video.removeEventListener('canplaythrough', handleReady);
         video.removeEventListener('error', handleError);
@@ -75,18 +166,28 @@ const ensureMediaEntry = (item) => {
       video.addEventListener('canplaythrough', handleReady, { once: true });
       video.addEventListener('error', handleError, { once: true });
       video.load();
-    });
+    })
+      .then((value) => {
+        entry.error = null;
+        return value;
+      })
+      .catch((error) => {
+        entry.error = error;
+        throw error;
+      });
 
-    const entry = { mediaType, element: video, ready };
     assetCache.set(item.asset, entry);
     return entry;
   }
 
   const image = new Image();
   image.decoding = 'async';
+  image.alt = altTextForItem(item);
   image.src = url;
 
-  const ready = new Promise((resolve, reject) => {
+  const entry = { mediaType, element: image, error: null };
+
+  entry.ready = new Promise((resolve, reject) => {
     const handleLoad = () => {
       image.removeEventListener('load', handleLoad);
       image.removeEventListener('error', handleError);
@@ -106,15 +207,40 @@ const ensureMediaEntry = (item) => {
 
     image.addEventListener('load', handleLoad, { once: true });
     image.addEventListener('error', handleError, { once: true });
-  });
+  })
+    .then((value) => {
+      entry.error = null;
+      return value;
+    })
+    .catch((error) => {
+      entry.error = error;
+      throw error;
+    });
 
-  const entry = { mediaType, element: image, ready };
   assetCache.set(item.asset, entry);
   return entry;
 };
 
-const preloadSequenceAssets = () =>
-  Promise.all(MEDITATION_SEQUENCE.map((item) => ensureMediaEntry(item).ready));
+const preloadSequenceAssets = async () => {
+  const results = await Promise.allSettled(
+    MEDITATION_SEQUENCE.map((item) => ensureMediaEntry(item).ready)
+  );
+
+  const failures = [];
+
+  results.forEach((result, index) => {
+    if (result.status === 'rejected') {
+      const item = MEDITATION_SEQUENCE[index];
+      const entry = assetCache.get(item.asset);
+      if (entry) {
+        entry.error = result.reason;
+      }
+      failures.push({ item, error: result.reason });
+    }
+  });
+
+  return { failures };
+};
 
 const msFromCss = (element, property) => {
   const raw = getComputedStyle(element).getPropertyValue(property).trim();
@@ -141,110 +267,32 @@ const numericCssVariable = (property, fallback = 0) => {
   return Number.isNaN(numeric) ? fallback : numeric;
 };
 
-const createCaptionController = () => {
-  const container = document.getElementById('caption-container');
-  if (!container) {
-    return null;
-  }
-
-  const text = container.querySelector('[data-role="caption-text"]');
-  const choices = container.querySelector('[data-role="caption-choices"]');
-
-  if (!text || !choices) {
-    return null;
-  }
-
-  return {
-    container,
-    text,
-    choices,
-    pendingTimeoutId: null,
-    pendingTransitionHandler: null,
-  };
-};
-
-const setCaptionContent = (controller, item) => {
-  const { container, text, choices } = controller;
-  text.textContent = item.caption ?? '';
+const buildCaptionBlock = (item) => {
+  const container = document.createElement('figcaption');
+  container.className = 'caption-container';
   container.dataset.type = item.type;
 
-  while (choices.firstChild) {
-    choices.removeChild(choices.firstChild);
-  }
+  const text = document.createElement('p');
+  text.className = 'caption-text';
+  text.textContent = item.caption ?? '';
+  container.appendChild(text);
 
   const hasChoices = Array.isArray(item.choices) && item.choices.length > 0;
   if (hasChoices) {
+    const list = document.createElement('ul');
+    list.className = 'caption-choices';
+
     for (const choice of item.choices) {
       const li = document.createElement('li');
       li.textContent = choice;
-      choices.appendChild(li);
-    }
-  }
-
-  container.classList.toggle('has-choices', hasChoices);
-};
-
-const updateCaption = (controller, item) => {
-  if (!controller) {
-    return;
-  }
-
-  const { container } = controller;
-
-  if (controller.pendingTimeoutId !== null) {
-    clearTimeout(controller.pendingTimeoutId);
-    controller.pendingTimeoutId = null;
-  }
-
-  if (controller.pendingTransitionHandler) {
-    container.removeEventListener('transitionend', controller.pendingTransitionHandler);
-    controller.pendingTransitionHandler = null;
-  }
-
-  const apply = () => {
-    setCaptionContent(controller, item);
-    requestAnimationFrame(() => {
-      container.classList.add('is-active');
-    });
-  };
-
-  if (!container.classList.contains('is-active')) {
-    apply();
-    return;
-  }
-
-  const handler = (event) => {
-    if (event.target !== container || event.propertyName !== 'opacity') {
-      return;
+      list.appendChild(li);
     }
 
-    container.removeEventListener('transitionend', handler);
-    controller.pendingTransitionHandler = null;
-
-    if (controller.pendingTimeoutId !== null) {
-      clearTimeout(controller.pendingTimeoutId);
-      controller.pendingTimeoutId = null;
-    }
-
-    apply();
-  };
-
-  controller.pendingTransitionHandler = handler;
-  container.addEventListener('transitionend', handler);
-
-  const duration = fadeDurationMs();
-  if (duration) {
-    controller.pendingTimeoutId = setTimeout(() => {
-      container.removeEventListener('transitionend', handler);
-      controller.pendingTransitionHandler = null;
-      controller.pendingTimeoutId = null;
-      apply();
-    }, duration);
-  } else {
-    apply();
+    container.appendChild(list);
+    container.classList.add('has-choices');
   }
 
-  container.classList.remove('is-active');
+  return container;
 };
 
 const buildStage = (item, media) => {
@@ -252,10 +300,13 @@ const buildStage = (item, media) => {
   stage.className = 'asset-stage';
   stage.dataset.type = item.type;
 
-  const wrapper = document.createElement('div');
+  const wrapper = document.createElement('figure');
   wrapper.className = 'media-wrapper';
   wrapper.dataset.type = item.type;
   wrapper.appendChild(media);
+
+  const caption = buildCaptionBlock(item);
+  wrapper.appendChild(caption);
 
   stage.appendChild(wrapper);
   return stage;
@@ -334,18 +385,57 @@ const waitForStage = (stage, entry) =>
     ? playVideo(entry.element)
     : holdForCheckpoint(stage);
 
-const presentSequenceItem = async (container, caption, item) => {
+const presentSequenceItem = async (container, item, hueController) => {
   const entry = ensureMediaEntry(item);
-  await entry.ready;
+  if (entry.error) {
+    console.warn(
+      `Skipping asset "${item.asset}" because it failed to preload earlier.`,
+      entry.error
+    );
+    return false;
+  }
+
+  try {
+    await entry.ready;
+  } catch (error) {
+    console.warn(`Skipping asset "${item.asset}" due to preload failure.`, error);
+    return false;
+  }
+
+  if (hueController) {
+    hueController.willPresent(item);
+  }
 
   resetMedia(entry);
-
-  updateCaption(caption, item);
 
   const stage = buildStage(item, entry.element);
   activateStage(container, stage);
 
   await waitForStage(stage, entry);
+  return true;
+};
+
+const createStatusController = () => {
+  const element = document.getElementById('status-banner');
+  if (!element) {
+    return {
+      show() {},
+      clear() {},
+    };
+  }
+
+  return {
+    show(message) {
+      element.textContent = message;
+      element.hidden = false;
+      element.classList.add('is-visible');
+    },
+    clear() {
+      element.textContent = '';
+      element.classList.remove('is-visible');
+      element.hidden = true;
+    },
+  };
 };
 
 const createHueController = () => {
@@ -380,25 +470,61 @@ const createHueController = () => {
   };
 };
 
-const runSequence = async (container, caption) => {
+const runSequence = async (container) => {
   const hueController = createHueController();
   hueController.reset();
 
+  let presentedCount = 0;
+
   for (const item of MEDITATION_SEQUENCE) {
-    hueController.willPresent(item);
-    await presentSequenceItem(container, caption, item);
+    const displayed = await presentSequenceItem(container, item, hueController);
+    if (displayed) {
+      presentedCount += 1;
+    }
   }
+
+  return presentedCount;
 };
 
 const init = async () => {
-  await preloadSequenceAssets();
-  const container = document.getElementById('asset-container');
-  if (!container) {
-    throw new Error('Missing required element "#asset-container"');
-  }
+  const status = createStatusController();
 
-  const caption = createCaptionController();
-  await runSequence(container, caption);
+  try {
+    const { failures } = await preloadSequenceAssets();
+
+    const container = document.getElementById('asset-container');
+    if (!container) {
+      throw new Error('Missing required element "#asset-container"');
+    }
+
+    if (failures.length) {
+      const failedList = failures
+        .map(({ item }) => item.asset.split('/').pop() ?? item.asset)
+        .join(', ');
+      status.show(
+        `Some scenes failed to load and will be skipped: ${failedList}.`
+      );
+    } else {
+      status.clear();
+    }
+
+    const presentedCount = await runSequence(container);
+
+    if (!failures.length && presentedCount > 0) {
+      status.clear();
+    }
+
+    if (presentedCount === 0) {
+      status.show(
+        'No media could be displayed. Please check your connection and try again.'
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    status.show(
+      'We ran into a problem loading the meditation experience. Please refresh to try again.'
+    );
+  }
 };
 
 if (document.readyState === 'loading') {
