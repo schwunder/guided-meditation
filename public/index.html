@@ -97,11 +97,57 @@
       animation-duration: calc(var(--animation-duration-border) * 0.75);
     }
 
+    .caption-container {
+      position: absolute;
+      bottom: 6vh;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: min(80vw, 720px);
+      width: calc(100vw - 32px);
+      padding: 16px 20px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.35);
+      color: rgba(255, 255, 255, 0.85);
+      text-align: center;
+      line-height: 1.5;
+      font-size: clamp(1rem, 0.75vw + 0.95rem, 1.3rem);
+      opacity: 0;
+      transition: opacity var(--transition-duration-fade) ease-in-out;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+    }
+
+    .caption-container.is-active {
+      opacity: 1;
+    }
+
+    .caption-text {
+      margin: 0;
+    }
+
+    .caption-choices {
+      list-style: none;
+      padding: 0;
+      margin: 18px 0 0;
+      display: grid;
+      gap: 10px;
+      font-size: clamp(0.95rem, 0.65vw + 0.9rem, 1.15rem);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .caption-container:not(.has-choices) .caption-choices {
+      display: none;
+    }
+
   </style>
 </head>
 <body>
   <div id="main-view" class="main-view">
     <div id="asset-container"></div>
+    <div id="caption-container" class="caption-container">
+      <p class="caption-text" data-role="caption-text"></p>
+      <ul class="caption-choices" data-role="caption-choices"></ul>
+    </div>
   </div>
   <script src="main.js"></script>
 </body>

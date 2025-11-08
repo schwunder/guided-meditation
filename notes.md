@@ -1,19 +1,20 @@
-Refactor checkpoints:
-- consolidate sequence helpers into single orchestrator flow
-- move visual transitions and sizing cues into CSS
-- track any dead code or helpers to prune later
+Refactor checkpoint flow:
+- keep orchestration in one timeline controller and delete bespoke helpers
+- push sizing and layout concerns to CSS variables/animations
+- log candidates for deletion when they no longer serve the current sequence
 
 Audit findings:
-- `playCheckpointItem` and `playTransitionItem` duplicate container clearing; fold into one presenter
-- `applyMediaSizing` + resize handlers can move to CSS-driven sizing, maybe drop runtime listeners
-- `SEQUENCE_HANDLERS` map unnecessary after unifying play logic
+- previous `playCheckpointItem`/`playTransitionItem` duplication has been replaced by `presentSequenceItem`
+- runtime resize wiring replaced by CSS-driven sizing; verify no stray listeners remain
+- `SEQUENCE_HANDLERS` map removed; stage manager now handles all media types
 
-Refactor notes:
-- CSS now handles fade transitions via `.asset-stage` states
-- JS orchestrator `runSequence` delegates to `presentSequenceItem`
-- Checkpoint dwell pulled from CSS `--checkpoint-hold-ms`; JS just waits on stage
-- `ensureMediaEntry` caches DOM nodes, `activateStage` owns swaps + fade cleanup
-- Sequence reads like script: load media, activate stage, await video or CSS hold
-- Stage removal tied to CSS `--transition-duration-fade` so fades stay in sync
-- Remaining question: confirm future caption copy flows through same stage layer
+Current technical model:
+- **Asset loader** (`ensureMediaEntry`) owns preload and caching, surfacing load errors promptly
+- **Stage manager** (`buildStage`, `activateStage`, `scheduleStageRemoval`) swaps DOM layers and mirrors CSS timing with a fallback timeout
+- **Sequence controller** (`runSequence`, `waitForStage`) reads `MEDITATION_SEQUENCE`, respecting CSS-derived holds and video playback before advancing
+
+Open follow-ups:
+- Confirm caption strategy—should captions live in stage manager or a parallel presenter?
+- Define extension points for interactive choices (pausing sequence, branching items)
+- Document how new media variants (e.g., ambient audio) plug into the asset loader
 

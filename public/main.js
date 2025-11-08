@@ -1,7 +1,65 @@
 const MEDITATION_SEQUENCE = [
-  { type: 'checkpoint', asset: 'checkpoints/1-image-1.png' },
-  { type: 'transition', asset: 'transitions/1-video-1.mp4' },
-  { type: 'checkpoint', asset: 'checkpoints/1-image-2.png' },
+  {
+    type: 'checkpoint',
+    asset: 'checkpoints/1-image-1.png',
+    caption: 'Meditation room',
+  },
+  {
+    type: 'transition',
+    asset: 'transitions/1-video-1.mp4',
+    caption: 'Things change',
+  },
+  {
+    type: 'checkpoint',
+    asset: 'checkpoints/1-image-8.jpg',
+    caption: 'Communal meditation',
+    choices: [
+      'Choice A: Go to the kitchen.',
+      'Choice B: Go to the bathroom.',
+    ],
+  },
+  {
+    type: 'transition',
+    asset: 'transitions/1-video-1.mp4',
+    caption: 'Things change',
+  },
+  {
+    type: 'checkpoint',
+    asset: 'checkpoints/1-image-9.jpg',
+    caption: 'I do',
+    choices: [
+      'Choice A: Read in the backyard.',
+      'Choice B: Go to a workshop.',
+    ],
+  },
+  {
+    type: 'transition',
+    asset: 'transitions/1-video-1.mp4',
+    caption: 'Things change',
+  },
+  {
+    type: 'checkpoint',
+    asset: 'checkpoints/1-image-10.jpg',
+    caption: 'I love — Have a chat with one of the meditation teachers.',
+    choices: [
+      'Choice A: Join the chaplain study hall.',
+      'Choice B: Continue the conversation.',
+    ],
+  },
+  {
+    type: 'transition',
+    asset: 'transitions/1-video-1.mp4',
+    caption: 'Things change',
+  },
+  {
+    type: 'checkpoint',
+    asset: 'checkpoints/1-image-12.jpg',
+    caption: 'I talk',
+    choices: [
+      'Choice A: Discuss meditation apps at Casa Chola with Tessa over steak.',
+      'Choice B: Go on a hike with Consciousness on the eightfold path.',
+    ],
+  },
 ];
 
 const assetCache = new Map();
@@ -98,6 +156,112 @@ const msFromCss = (element, property) => {
 const fadeDurationMs = () =>
   msFromCss(document.documentElement, '--transition-duration-fade');
 
+const createCaptionController = () => {
+  const container = document.getElementById('caption-container');
+  if (!container) {
+    return null;
+  }
+
+  const text = container.querySelector('[data-role="caption-text"]');
+  const choices = container.querySelector('[data-role="caption-choices"]');
+
+  if (!text || !choices) {
+    return null;
+  }
+
+  return {
+    container,
+    text,
+    choices,
+    pendingTimeoutId: null,
+    pendingTransitionHandler: null,
+  };
+};
+
+const setCaptionContent = (controller, item) => {
+  const { container, text, choices } = controller;
+  text.textContent = item.caption ?? '';
+  container.dataset.type = item.type;
+
+  while (choices.firstChild) {
+    choices.removeChild(choices.firstChild);
+  }
+
+  const hasChoices = Array.isArray(item.choices) && item.choices.length > 0;
+  if (hasChoices) {
+    for (const choice of item.choices) {
+      const li = document.createElement('li');
+      li.textContent = choice;
+      choices.appendChild(li);
+    }
+  }
+
+  container.classList.toggle('has-choices', hasChoices);
+};
+
+const updateCaption = (controller, item) => {
+  if (!controller) {
+    return;
+  }
+
+  const { container } = controller;
+
+  if (controller.pendingTimeoutId !== null) {
+    clearTimeout(controller.pendingTimeoutId);
+    controller.pendingTimeoutId = null;
+  }
+
+  if (controller.pendingTransitionHandler) {
+    container.removeEventListener('transitionend', controller.pendingTransitionHandler);
+    controller.pendingTransitionHandler = null;
+  }
+
+  const apply = () => {
+    setCaptionContent(controller, item);
+    requestAnimationFrame(() => {
+      container.classList.add('is-active');
+    });
+  };
+
+  if (!container.classList.contains('is-active')) {
+    apply();
+    return;
+  }
+
+  const handler = (event) => {
+    if (event.target !== container || event.propertyName !== 'opacity') {
+      return;
+    }
+
+    container.removeEventListener('transitionend', handler);
+    controller.pendingTransitionHandler = null;
+
+    if (controller.pendingTimeoutId !== null) {
+      clearTimeout(controller.pendingTimeoutId);
+      controller.pendingTimeoutId = null;
+    }
+
+    apply();
+  };
+
+  controller.pendingTransitionHandler = handler;
+  container.addEventListener('transitionend', handler);
+
+  const duration = fadeDurationMs();
+  if (duration) {
+    controller.pendingTimeoutId = setTimeout(() => {
+      container.removeEventListener('transitionend', handler);
+      controller.pendingTransitionHandler = null;
+      controller.pendingTimeoutId = null;
+      apply();
+    }, duration);
+  } else {
+    apply();
+  }
+
+  container.classList.remove('is-active');
+};
+
 const buildStage = (item, media) => {
   const stage = document.createElement('div');
   stage.className = 'asset-stage';
@@ -185,11 +349,13 @@ const waitForStage = (stage, entry) =>
     ? playVideo(entry.element)
     : holdForCheckpoint(stage);
 
-const presentSequenceItem = async (container, item) => {
+const presentSequenceItem = async (container, caption, item) => {
   const entry = ensureMediaEntry(item);
   await entry.ready;
 
   resetMedia(entry);
+
+  updateCaption(caption, item);
 
   const stage = buildStage(item, entry.element);
   activateStage(container, stage);
@@ -197,16 +363,21 @@ const presentSequenceItem = async (container, item) => {
   await waitForStage(stage, entry);
 };
 
-const runSequence = async (container) => {
+const runSequence = async (container, caption) => {
   for (const item of MEDITATION_SEQUENCE) {
-    await presentSequenceItem(container, item);
+    await presentSequenceItem(container, caption, item);
   }
 };
 
 const init = async () => {
   await preloadSequenceAssets();
   const container = document.getElementById('asset-container');
-  await runSequence(container);
+  if (!container) {
+    throw new Error('Missing required element "#asset-container"');
+  }
+
+  const caption = createCaptionController();
+  await runSequence(container, caption);
 };
 
 if (document.readyState === 'loading') {
