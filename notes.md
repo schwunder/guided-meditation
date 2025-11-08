@@ -1,6 +1,11 @@
-- **Refactor checkpoint flow** — keep orchestration in one timeline controller and delete bespoke helpers; push sizing and layout concerns to CSS variables/animations; log candidates for deletion when they no longer serve the current sequence.
-- **Repo essentials** — `public/index.html` is the single entry point where CSS variables define timing (`--transition-duration-fade`, `--checkpoint-hold-ms`) and styling (`--accent-hue-*`); `public/main.js` is the lone script owning asset caching, stage creation, and the linear `MEDITATION_SEQUENCE`; `server.js` is a Bun dev server that hand-maps `/`, `/main.js`, and `/assets/*` to `public/`.
-- **Asset metadata** — `checkpoint-metadata.json` lists every checkpoint/choice asset with `title` and `description` fields, yet nothing loads it; asset folders under `public/assets/` split into `checkpoints/`, `transitions/`, `chakras/`, and `archive/` footage.
-- **Current technical model** — the **asset loader** (`ensureMediaEntry`) owns preload and caching while surfacing load errors promptly; the **stage manager** (`buildStage`, `activateStage`, `scheduleStageRemoval`) swaps DOM layers and mirrors CSS timing with a fallback timeout; the **sequence controller** (`runSequence`, `waitForStage`) reads `MEDITATION_SEQUENCE`, respecting CSS-derived holds and video playback before advancing.
-- **Open follow-ups** — wire `checkpoint-metadata.json` into the stage builder for alt text and richer captions; relax Bun routing so any new JSON/audio in `public/` serves without extra branches; define how branching or interactive choices should pause or fork the sequence beyond the linear run; document how new media variants (ambient audio, layered transitions) plug into the asset loader without breaking cache reuse.
+- **Refactor checkpoint flow** — Consolidated orchestration into `timeline()` + `initTimeline()`. Choice handling now lives in the HTML template, and CSS still dictates timing/layout through custom properties.
+- **Repo essentials** — `public/index.html` hosts the stage template, utility classes, and CSS variables. `public/main.js` handles data loading, media factory caching, template composition, hue shifts, and status publishing. `server.js` serves every static file under `public/`, including new JSON feeds.
+- **Asset metadata** — `public/checkpoint-metadata.json` enriches each asset with `title`/`description` used for captions and `alt` text. Sequence entries live in `public/sequence.json`.
+- **Current technical model** — the **media factory** normalizes preload/reset across media types; the **stage composer** clones `<template id="stage">` and toggles `has-choices`; the **status store** fans out preload/progress messages; the **hue controller** still flips `--accent-hue` after the second checkpoint.
+- **Next investigations**
+  - Branching logic or conditional timelines that pause the base iterator.
+  - Ambient audio layering support (preload, sync, fade control).
+  - Telemetry hook for skipped assets and fatal errors.
+  - Progressive enhancement for browsers with limited `fetch`/template support.
+
 
