@@ -1,22 +1,22 @@
 # Guided Meditation
-Interactive guided meditation experience delivered with static HTML sequences, lightweight CSS, and a lean controller in `public/main.js`.
+Interactive guided meditation experience delivered as a single HTML file with inline CSS and JavaScript, featuring 8 scenes with branching paths based on user choices.
 
 ## Architecture Overview
 | Layer | Responsibilities |
 | --- | --- |
-| Static HTML shell | `public/index.html` now hard-codes the entire flow: two `<section class="sequence">` blocks, each with the checkpoints, captions, and media hooks already in place. Every visual tweak lives in markup or CSS classes so nothing needs to be cloned or templated at runtime. |
-| Styling (`public/index.html` + `public/styles.css`) | Layout, color, animation, and responsive states belong to CSS. Timing values and accents are handled with custom properties instead of JavaScript constants. |
-| JavaScript controller (`public/main.js`) | 344 lines that wire up DOM references, parse HTML sequences via `readTimeline()`, manage Map-based media cache, render stages, and orchestrate playback. Uses straightforward conditionals, no ternaries, and only minimal `console.error` output when a real failure occurs. |
-| Dev server (`server.js`) | Bun-based static server that simply returns the HTML sequences, `main.js`, CSS, and media assets without any JSON endpoints. |
+| Single HTML file (`public/index.html`) | Contains all code inline: CSS (~100 lines) in a `<style>` block and JavaScript (~365 lines) in a `<script>` block. The HTML structure includes a simple player container with a media slot and caption element. All visual styling, animations, and theming are handled via CSS custom properties. |
+| Inline CSS (`<style>` block) | Layout, color, animation, and responsive states. Timing values and color accents are handled with CSS custom properties (e.g., `--h`, `--s`, `--l`, `--fade`, `--border`). Each scene dynamically updates hue values for smooth color transitions. |
+| Inline JavaScript (`<script>` block) | ~365 lines that manage the `SCENES` array (8 scenes), handle media preloading and caching via Map objects, orchestrate playback flow, and manage interactive choices via arrow key input. Uses straightforward conditionals and only minimal `console.error` output when a real failure occurs. |
+| Dev server (`server.js`) | Bun-based static server that serves `index.html` and media assets from `/assets/` without any JSON endpoints or dynamic routes. |
 
 ## Editing the experience
-- Update checkpoint copy, media references, or layout directly inside the sequence markup in `public/index.html`. The project assumes two sequences: `meditation-room → things-change → kitchen` and `kitchen → things-change → final-checkpoint`.
-- Add or restyle visuals through CSS classes rather than inline styles or JavaScript mutations. New utility classes should live alongside the existing ones in the stylesheet.
-- Keep `public/main.js` focused on orchestration: DOM lookups, timeline advancement, and state toggles. If something feels longer than a few lines, prefer extracting it into CSS/HTML instead.
+- Update scene content, captions, and media references by editing the `SCENES` array in the `<script>` block of `public/index.html`. Each scene has `start`, `video`, and `end` items. The project includes 8 scenes with branching paths based on user arrow key choices (← / →).
+- Add or restyle visuals through CSS classes in the `<style>` block. New utility classes should live alongside existing ones. CSS custom properties control timing (`--fade`, `--border`) and theming (`--h`, `--s`, `--l`).
+- Keep the JavaScript focused on orchestration: DOM lookups, scene progression, media caching, and choice handling. If something feels longer than a few lines, prefer extracting it into CSS/HTML instead.
 - Error handling is intentionally quiet. Only log with `console.error` when an action truly fails (missing element, media that cannot play, etc.); otherwise, let the flow continue without status banners.
 
 ## Project folders
-`public/` contains the static entry point, CSS, JS, and all media. `server.js` exposes the `public/` directory for local development. No external JSON feeds are required; sequences and metadata ship inside the HTML.
+`public/` contains the single HTML entry point (`index.html`) with all CSS and JavaScript inline, plus all media assets. `server.js` serves `index.html` at the root and media assets from `/assets/`. No external JSON feeds are required; all scene data and metadata are defined in the `SCENES` array within the HTML file.
 
 ## Development with Claude Code
 
