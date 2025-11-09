@@ -9,11 +9,36 @@ Interactive guided meditation experience delivered as a single HTML file with in
 | Inline JavaScript (`<script>` block) | ~365 lines that manage the `SCENES` array (8 scenes), handle media preloading and caching via Map objects, orchestrate playback flow, and manage interactive choices via arrow key input. Uses straightforward conditionals and only minimal `console.error` output when a real failure occurs. |
 | Dev server (`server.js`) | Bun-based static server that serves `index.html` and media assets from `/assets/` without any JSON endpoints or dynamic routes. |
 
-## Editing the experience
+## Development
+
+### Local Development
+```bash
+bun server.js  # Start server on http://localhost:8080
+```
+
+### Editing the experience
 - Update scene content, captions, and media references by editing the `SCENES` array in the `<script>` block of `public/index.html`. Each scene has `start`, `video`, and `end` items. The project includes 8 scenes with branching paths based on user arrow key choices (← / →).
 - Add or restyle visuals through CSS classes in the `<style>` block. New utility classes should live alongside existing ones. CSS custom properties control timing (`--fade`, `--border`) and theming (`--h`, `--s`, `--l`).
 - Keep the JavaScript focused on orchestration: DOM lookups, scene progression, media caching, and choice handling. If something feels longer than a few lines, prefer extracting it into CSS/HTML instead.
 - Error handling is intentionally quiet. Only log with `console.error` when an action truly fails (missing element, media that cannot play, etc.); otherwise, let the flow continue without status banners.
+
+### GitHub Pages Deployment
+
+This project includes automated deployment to GitHub Pages via `.github/workflows/deploy.yml`.
+
+**To enable:**
+1. Push to `main` branch or manually trigger via Actions tab
+2. Go to repository Settings → Pages
+3. Under "Source", select "GitHub Actions"
+4. The workflow will automatically build and deploy on every push to `main`
+
+The workflow:
+- Copies `public/*` to `dist/` (no build step needed)
+- Injects `<base href="/repo-name/">` for subpath routing
+- Creates `.nojekyll` to disable Jekyll processing
+- Deploys to `https://username.github.io/repo-name/`
+
+**Asset paths:** All asset references use relative paths (`assets/...`) to work with GitHub Pages subpath routing.
 
 ## Project folders
 `public/` contains the single HTML entry point (`index.html`) with all CSS and JavaScript inline, plus all media assets. `server.js` serves `index.html` at the root and media assets from `/assets/`. No external JSON feeds are required; all scene data and metadata are defined in the `SCENES` array within the HTML file.

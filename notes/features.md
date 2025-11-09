@@ -1,20 +1,20 @@
 ## Implemented Features
 | Area | Highlights |
 | --- | --- |
-| Sequence Flow | HTML-embedded sequences via `[data-sequence-source]` and `[data-sequence-item]` attributes. `readTimeline()` in `public/main.js` parses the markup and streams items through a simplified iteration loop. Checkpoints honor per-item `data-hold` or fall back to `--checkpoint-hold-ms`; transitions rely on video playback end events. |
-| Stage Presentation | `ensureMedia()` preloads and caches `<img>`/`<video>` elements in a Map, refreshing `alt` text from data attributes. `renderStage()` creates stage DOM from item data, and `activateStage()` toggles `is-active` to let CSS handle fades and cleanup. |
-| Styling Contract | CSS variables (`--transition-duration-fade`, `--checkpoint-hold-ms`, `--accent-hue-base`, `--accent-hue-shift`) in `public/index.html` keep JavaScript in sync. Each sequence section can define its own hue palette inline. Utility classes (`.radiant-border`, `.caption`, `.choices`) express layout and animations without duplicating rules. |
-| Dynamic Hue Accent | Each `[data-sequence-id]` section defines `--accent-hue-base` and `--accent-hue-shift` inline styles. JavaScript updates `--accent-hue` on `document.documentElement` as the experience progresses, creating smooth color transitions for the radiant border animation. |
-| Asset Library | Media lives under `public/assets/` with subfolders for checkpoints, transitions, chakras, and archived experiments. Asset paths are URL-encoded and referenced via `data-asset` attributes in the HTML markup. |
-| Multiple Sequences | Currently supports 2 sequences: "arrival" (blue/magenta hues) and "kitchen" (orange/teal hues), each defined as `<section data-sequence-id>` with distinct theming. |
+| Scene Flow | 8 scenes defined in inline `SCENES` JavaScript array (IDs: 'one' through 'eight'). `play()` iterates through scenes, calling `showStill()` for checkpoints and `playVideo()` for transitions. Checkpoints hold for `STILL_MS` (2500ms); transitions play until video `ended` event. |
+| Interactive Branching | Scenes can have interactive choice points with `left`/`right` assets and captions. Users press arrow keys (← / →) to choose paths. `path` object stores choices by `key`, and subsequent items with `follow` property conditionally render assets based on previous choices. Currently 3 choice points across 8 scenes. |
+| Media Preloading | `collectUrls()` gathers all asset URLs from `SCENES`, `preloadImage()` and `preloadVideo()` populate `imgCache` and `vidCache` Maps. Experience waits for all media to load before starting `play()`. |
+| Stage Presentation | `render()` swaps media nodes in DOM slot and updates caption text. CSS class `ready` toggles for fade transitions. Video playback uses native browser controls (muted, autoplay on render). |
+| Styling & Theming | CSS variables (`--h`, `--s`, `--l`, `--fade`, `--border`) control colors and timing. `SCENE_HUES` array defines 8 color triplets; `applyHue()` updates CSS properties per scene for smooth color transitions. `radiate` keyframe animation creates pulsing border glow. |
+| Asset Library | Media organized under `public/assets/checkpoints/` (PNG images) and `public/assets/transitions/` (MP4 videos). All assets referenced by URL strings in `SCENES` array. |
 
 ## Planned Features
 
 | Area | Vision |
 | --- | --- |
-| 7-Chakra Daily Sequence | Meditation experience will evolve into 7 distinct HTML sequence sections—one for each chakra affirmation (I AM, I FEEL, I DO, I LOVE, I TALK, I SEE, I UNDERSTAND). Each sequence maps to a chakra color (Red, Orange, Yellow, Green, Blue, Indigo, Violet) and daily activity (grounding, stretching, focus work, gratitude, communication, reflection, integration). Currently has 2 sequences in HTML; will expand to 7 sections that users can eventually choose between based on their daily practice or time of day. |
-| User-Selectable Sequences | Allow users to choose which chakra sequence to experience, either manually or automatically based on time of day. The 7 HTML sequences will be pre-built in `index.html` but selectively activated based on user choice or smart defaults. |
-| Chakra Color Theming | Each of the 7 sequences already has inline CSS variable support for custom hues. Extend this pattern to ensure each chakra maps to its corresponding color (Red → Orange → Yellow → Green → Blue → Indigo → Violet), creating smooth color transitions that align with the affirmation and activity focus. |
+| 7-Chakra Daily Sequence | Expand the `SCENES` array to support 7 distinct meditation sequences—one for each chakra affirmation (I AM, I FEEL, I DO, I LOVE, I TALK, I SEE, I UNDERSTAND). Each sequence maps to a chakra color (Red, Orange, Yellow, Green, Blue, Indigo, Violet) and daily activity (grounding, stretching, focus work, gratitude, communication, reflection, integration). Currently has 1 linear sequence of 8 scenes; will reorganize into 7 selectable sequences. |
+| User-Selectable Sequences | Allow users to choose which chakra sequence to experience, either manually (menu UI) or automatically based on time of day. The 7 sequences will be pre-defined in the `SCENES` array with metadata (chakra, color, affirmation) and `play()` will filter/activate the chosen sequence. |
+| Chakra Color Theming | Extend `SCENE_HUES` to support distinct color palettes per chakra sequence. Ensure each chakra maps to its corresponding color (Red → Orange → Yellow → Green → Blue → Indigo → Violet), creating smooth color transitions that align with the affirmation and activity focus. |
 
 ### 7-Chakra Sequence Details
 
