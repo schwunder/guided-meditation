@@ -25,10 +25,5 @@ npm-debug.log*
 .env
 .env.local
 
-# Assets
-public/assets/
-
-# Archive
-public/archive/
 
 .claude/
