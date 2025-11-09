@@ -48,13 +48,14 @@ const SCENES = [
     end  :{type:'img',caption:"I feel so relaxed. Let's get the day started.",src:'/assets/checkpoints/1-2.png'}
   }},
   {id:'two',items:{
-    start:{type:'img',caption:"Drink mate at home or get breakfast with a friend?",
+    start:{type:'img',caption:"Drink maté at home or get breakfast with a friend?",
            left:'/assets/checkpoints/2-1.png',right:'/assets/checkpoints/2-1.png',key:'two-start',
-           captionLeft:"Home mate",captionRight:"Breakfast out"},
+           captionLeft:"Drink maté at home",captionRight:"Get breakfast with a friend"},
     video:{type:'vid',left:'/assets/transitions/2a.mp4',right:'/assets/transitions/2b.mp4',follow:'two-start'},
-    end  :{type:'img',caption:"Make a choice",
+    end  :{type:'img',caption:"Cold plunge or read in the garden?",
            left:'/assets/checkpoints/2-2a.png',right:'/assets/checkpoints/2-2b.png',key:'two-end',
-           captionLeft:"I love mate! Cold plunge or read in the garden?",captionRight:"My favorite food at Casa Chola. Cold plunge or read in the garden?"}
+           follow:'two-start',
+           captionLeft:"I love maté!",captionRight:"My favorite food at Casa Chola."}
   }},
   {id:'three',items:{
     start:{type:'img',captionLeft:"Morning cold plunge at Lácar Lake.",captionRight:"It's such a beautiful day, let's read in the garden.",
@@ -66,9 +67,9 @@ const SCENES = [
   {id:'four',items:{
     start:{type:'img',caption:"Breathwork with Paul and Erika today.",src:'/assets/checkpoints/4-1.png'},
     video:{type:'vid',src:'/assets/transitions/4.mp4'},
-    end  :{type:'img',caption:"Breathing with the collective. Talk with the teachers or make lunch with friends??",
-           left:'/assets/checkpoints/4-2.png',right:'/assets/checkpoints/4-2.png',key:'five-path'
-          }
+    end  :{type:'img',caption:"Breathing with the collective. Talk with the teachers or make lunch with friends?",
+           left:'/assets/checkpoints/4-2.png',right:'/assets/checkpoints/4-2.png',key:'five-path',
+           captionLeft:"Talk with the teachers",captionRight:"Make lunch with friends"}
   }},
   {id:'five',items:{
     start:{type:'img',captionLeft:"Taking a moment to connect with Janne and Kaio, the meditation teachers.", 
@@ -76,7 +77,7 @@ const SCENES = [
            left:'/assets/checkpoints/5-1a.png',right:'/assets/checkpoints/5-1b.png',follow:'five-path'},
     video:{type:'vid',left:'/assets/transitions/5a.mp4',right:'/assets/transitions/5b.mp4',follow:'five-path'},
     end  :{type:'img',captionLeft:"Deepening my understanding of Buddhist meditation.",captionRight:"Eating tacos for lunch!",
-           left:'/assets/checkpoints/5-1a.png',right:'/assets/checkpoints/5-1b.png',follow:'five-path'}
+           left:'/assets/checkpoints/5-2a.png',right:'/assets/checkpoints/5-2b.png',follow:'five-path'}
   }},
   {id:'six',items:{
     start:{type:'img',caption:"Heading to Le Village for a talk about vibecoding telegram chatbots.",src:'/assets/checkpoints/6-1.png'},
@@ -153,11 +154,11 @@ const render = (node,text) => { node.classList.add('media'); slot.innerHTML=''; 
 
 const path = {}; // 'two-start'/'two-end'/...
 
-function showChoiceUI(text, leftLabel, rightLabel) {
+function showChoiceUI(text) {
   captionEl.textContent = text || '';
   const hint = document.createElement('div');
   hint.className = 'hint';
-  hint.textContent = `Choose: ← ${leftLabel||'Left'} / → ${rightLabel||'Right'}`;
+  hint.textContent = '← / →';
   captionEl.appendChild(hint);
   // ensure visible even when no media node is rendered yet
   if (!player.classList.contains('ready')) player.classList.add('ready');
@@ -189,11 +190,30 @@ const captionFor = (it, startCap) => {
 };
 
 async function showStill(sceneId, it, isStart, startCapRef) {
-  const interactive = !!(it.left && it.right && !it.follow);
+  const interactive = !!(it.left && it.right && it.key);
+  const hasFollow = !!it.follow;
+  
+  if (hasFollow && interactive) {
+    // First show conditional caption/image based on previous choice
+    const url = urlFor(it);
+    const cap = captionFor(it, startCapRef.value);
+    render(imgCache.get(url), cap);
+    await wait(STILL_MS);
+    // Then show choice UI
+    showChoiceUI(it.caption);
+    await awaitChoice(it.key || sceneId);
+    // Choice is made, transition to next scene (don't show another image)
+    return;
+  }
+  
   if (interactive) {
     // caption-only while waiting for choice
-    showChoiceUI(it.caption, it.captionLeft, it.captionRight);
+    showChoiceUI(it.caption);
     await awaitChoice(it.key || sceneId);
+    // For end items, transition directly to next scene without showing another image
+    if (!isStart) {
+      return;
+    }
     const side = path[it.key || sceneId];
     const chosenUrl = it[side] || it.src || it.left || it.right;
     const chosenCap = side==='left' ? (it.captionLeft || it.caption || '')
