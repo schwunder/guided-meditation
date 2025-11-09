@@ -5,25 +5,104 @@
 <title>Meditation — captions required on images</title>
 
 <style>
-:root{--h:0;--s:85%;--l:55%;--fade:.5s;--border:8.5s;--surface-bg:rgba(0,0,0,.24);--caption-bg:rgba(0,0,0,.42);--text:#f5f7ff;--shadow:0 12px 32px rgba(0,0,0,.35)}
-*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}
-body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:
-radial-gradient(circle at 20% 20%, rgba(110,30,30,.32), transparent 55%),
-radial-gradient(circle at 80% 80%, rgba(180,60,40,.28), transparent 60%),#1a0505;overflow:hidden}
-@keyframes radiate{0%,100%{box-shadow:
-0 0 1.5vmax 0 hsla(var(--h),var(--s),var(--l),.45),
-0 0 3vmax 0 hsla(var(--h),var(--s),var(--l),.30),
-0 0 4.5vmax 0 hsla(var(--h),var(--s),var(--l),.15)}
-50%{box-shadow:
-0 0 12vmax 6vmax hsla(var(--h),var(--s),var(--l),.55),
-0 0 18vmax 9vmax hsla(var(--h),var(--s),var(--l),.35),
-0 0 26vmax 13vmax hsla(var(--h),var(--s),var(--l),.20)}}
-main{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
-.player{display:flex;flex-direction:column;align-items:center;gap:20px;padding:16px 18px 24px;border-radius:18px;background:var(--surface-bg);border:3px solid hsla(var(--h),var(--s),var(--l),.45);animation:radiate var(--border) ease-in-out infinite;opacity:0;transition:opacity var(--fade)}
-.player.ready{opacity:1}
-.media{display:block;max-width:78vw;max-height:68vh;object-fit:contain}
-.caption{width:min(78vw,680px);padding:16px 22px;border-radius:16px;background:var(--caption-bg);text-align:center;line-height:1.5;backdrop-filter:blur(8px);box-shadow:var(--shadow);font-size:clamp(1rem,.75vw + .95rem,1.25rem)}
-.hint{opacity:.85;font-size:.95em;margin-top:6px}
+:root {
+  --h: 0;
+  --s: 85%;
+  --l: 55%;
+  --fade: .5s;
+  --border: 8.5s;
+  --surface-bg: rgba(0,0,0,.24);
+  --caption-bg: rgba(0,0,0,.42);
+  --text: #f5f7ff;
+  --shadow: 0 12px 32px rgba(0,0,0,.35);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(110,30,30,.32), transparent 55%),
+    radial-gradient(circle at 80% 80%, rgba(180,60,40,.28), transparent 60%),
+    #1a0505;
+  overflow: hidden;
+}
+
+@keyframes radiate {
+  0%, 100% {
+    box-shadow:
+      0 0 1.5vmax 0 hsla(var(--h),var(--s),var(--l),.45),
+      0 0 3vmax 0 hsla(var(--h),var(--s),var(--l),.30),
+      0 0 4.5vmax 0 hsla(var(--h),var(--s),var(--l),.15);
+  }
+  50% {
+    box-shadow:
+      0 0 12vmax 6vmax hsla(var(--h),var(--s),var(--l),.55),
+      0 0 18vmax 9vmax hsla(var(--h),var(--s),var(--l),.35),
+      0 0 26vmax 13vmax hsla(var(--h),var(--s),var(--l),.20);
+  }
+}
+
+main {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 18px 24px;
+  border-radius: 18px;
+  background: var(--surface-bg);
+  border: 3px solid hsla(var(--h),var(--s),var(--l),.45);
+  animation: radiate var(--border) ease-in-out infinite;
+  opacity: 0;
+  transition: opacity var(--fade);
+}
+
+.player.ready {
+  opacity: 1;
+}
+
+.media {
+  display: block;
+  max-width: 78vw;
+  max-height: 68vh;
+  object-fit: contain;
+}
+
+.caption {
+  width: min(78vw,680px);
+  padding: 16px 22px;
+  border-radius: 16px;
+  background: var(--caption-bg);
+  text-align: center;
+  line-height: 1.5;
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+  font-size: clamp(1rem,.75vw + .95rem,1.25rem);
+}
+
+.hint {
+  opacity: .85;
+  font-size: .95em;
+  margin-top: 6px;
+}
 </style>
 
 <main>
@@ -37,73 +116,210 @@ main{position:fixed;inset:0;display:flex;align-items:center;justify-content:cent
 const STILL_MS = 2500;
 
 const SCENE_HUES = [
-  [0,85,55],[28,85,55],[46,85,55],[96,85,55],
-  [196,85,55],[260,85,55],[300,85,55],[0,5,96],
+  [0, 85, 55],
+  [28, 85, 55],
+  [46, 85, 55],
+  [96, 85, 55],
+  [196, 85, 55],
+  [260, 85, 55],
+  [300, 85, 55],
+  [0, 5, 96],
 ];
 
 const SCENES = [
-  {id:'one',items:{
-    start:{type:'img',caption:"It's 7am. Time for our morning meditation.",src:'/assets/checkpoints/1-1.png'},
-    video:{type:'vid',src:'/assets/transitions/1.mp4'},
-    end  :{type:'img',caption:"I feel so relaxed. Let's get the day started.",src:'/assets/checkpoints/1-2.png'}
-  }},
-  {id:'two',items:{
-    start:{type:'img',caption:"Drink maté at home or get breakfast with a friend?",
-           left:'/assets/checkpoints/2-1.png',right:'/assets/checkpoints/2-1.png',key:'two-start',
-           captionLeft:"Drink maté at home",captionRight:"Get breakfast with a friend"},
-    video:{type:'vid',left:'/assets/transitions/2a.mp4',right:'/assets/transitions/2b.mp4',follow:'two-start'},
-    end  :{type:'img',caption:"Cold plunge or read in the garden?",
-           left:'/assets/checkpoints/2-2a.png',right:'/assets/checkpoints/2-2b.png',key:'two-end',
-           follow:'two-start',
-           captionLeft:"I love maté!",captionRight:"My favorite food at Casa Chola."}
-  }},
-  {id:'three',items:{
-    start:{type:'img',captionLeft:"Morning cold plunge at Lácar Lake.",captionRight:"It's such a beautiful day, let's read in the garden.",
-           left:'/assets/checkpoints/3-1a.png',right:'/assets/checkpoints/3-1b.png',follow:'two-end'},
-    video:{type:'vid',left:'/assets/transitions/3a.mp4',right:'/assets/transitions/3b.mp4',follow:'two-end'},
-    end  :{type:'img',captionLeft:"Brrr so cold!",captionRight:"I love hearing the sound of the stream.",
-           left:'/assets/checkpoints/3-2a.png',right:'/assets/checkpoints/3-2b.png',follow:'two-end'}
-  }},
-  {id:'four',items:{
-    start:{type:'img',caption:"Breathwork with Paul and Erika today.",src:'/assets/checkpoints/4-1.png'},
-    video:{type:'vid',src:'/assets/transitions/4.mp4'},
-    end  :{type:'img',caption:"Breathing with the collective. Talk with the teachers or make lunch with friends?",
-           left:'/assets/checkpoints/4-2.png',right:'/assets/checkpoints/4-2.png',key:'five-path',
-           captionLeft:"Talk with the teachers",captionRight:"Make lunch with friends"}
-  }},
-  {id:'five',items:{
-    start:{type:'img',captionLeft:"Taking a moment to connect with Janne and Kaio, the meditation teachers.", 
-    captionRight:"Mmm what should we cook?",
-           left:'/assets/checkpoints/5-1a.png',right:'/assets/checkpoints/5-1b.png',follow:'five-path'},
-    video:{type:'vid',left:'/assets/transitions/5a.mp4',right:'/assets/transitions/5b.mp4',follow:'five-path'},
-    end  :{type:'img',captionLeft:"Deepening my understanding of Buddhist meditation.",captionRight:"Eating tacos for lunch!",
-           left:'/assets/checkpoints/5-2a.png',right:'/assets/checkpoints/5-2b.png',follow:'five-path'}
-  }},
-  {id:'six',items:{
-    start:{type:'img',caption:"Heading to Le Village for a talk about vibecoding telegram chatbots.",src:'/assets/checkpoints/6-1.png'},
-    video:{type:'vid',src:'/assets/transitions/6.mp4'},
-    end  :{type:'img',caption:"We made a meditation chatbot!",src:'/assets/checkpoints/6-2.png'}
-  }},
-  {id:'seven',items:{
-    start:{type:'img',caption:"Another day is over.",src:'/assets/checkpoints/7-1.png'},
-    video:{type:'vid',src:'/assets/transitions/7.mp4'},
-    end  :{type:'img',caption:"This is real life.",src:'/assets/checkpoints/7-2.png'}
-  }},
-  {id:'eight',items:{
-    start:{type:'img',caption:"A new way of life?",src:'/assets/checkpoints/8-1.png'},
-    video:{type:'vid',src:'/assets/transitions/8.mp4'},
-    end  :{type:'img',caption:"This is real life.",src:'/assets/checkpoints/8-2.png'}
-  }},
+  {
+    id: 'one',
+    items: {
+      start: {
+        type: 'img',
+        caption: "It's 7am. Time for our morning meditation.",
+        src: '/assets/checkpoints/1-1.png'
+      },
+      video: {
+        type: 'vid',
+        src: '/assets/transitions/1.mp4'
+      },
+      end: {
+        type: 'img',
+        caption: "I feel so relaxed. Let's get the day started.",
+        src: '/assets/checkpoints/1-2.png'
+      }
+    }
+  },
+  {
+    id: 'two',
+    items: {
+      start: {
+        type: 'img',
+        caption: "Drink maté at home or get breakfast with a friend?",
+        left: '/assets/checkpoints/2-1.png',
+        right: '/assets/checkpoints/2-1.png',
+        key: 'two-start',
+        captionLeft: "Drink maté at home",
+        captionRight: "Get breakfast with a friend"
+      },
+      video: {
+        type: 'vid',
+        left: '/assets/transitions/2a.mp4',
+        right: '/assets/transitions/2b.mp4',
+        follow: 'two-start'
+      },
+      end: {
+        type: 'img',
+        caption: "Cold plunge or read in the garden?",
+        left: '/assets/checkpoints/2-2a.png',
+        right: '/assets/checkpoints/2-2b.png',
+        key: 'two-end',
+        follow: 'two-start',
+        captionLeft: "I love maté!",
+        captionRight: "My favorite food at Casa Chola."
+      }
+    }
+  },
+  {
+    id: 'three',
+    items: {
+      start: {
+        type: 'img',
+        captionLeft: "Morning cold plunge at Lácar Lake.",
+        captionRight: "It's such a beautiful day, let's read in the garden.",
+        left: '/assets/checkpoints/3-1a.png',
+        right: '/assets/checkpoints/3-1b.png',
+        follow: 'two-end'
+      },
+      video: {
+        type: 'vid',
+        left: '/assets/transitions/3a.mp4',
+        right: '/assets/transitions/3b.mp4',
+        follow: 'two-end'
+      },
+      end: {
+        type: 'img',
+        captionLeft: "Brrr so cold!",
+        captionRight: "I love hearing the sound of the stream.",
+        left: '/assets/checkpoints/3-2a.png',
+        right: '/assets/checkpoints/3-2b.png',
+        follow: 'two-end'
+      }
+    }
+  },
+  {
+    id: 'four',
+    items: {
+      start: {
+        type: 'img',
+        caption: "Breathwork with Paul and Erika today.",
+        src: '/assets/checkpoints/4-1.png'
+      },
+      video: {
+        type: 'vid',
+        src: '/assets/transitions/4.mp4'
+      },
+      end: {
+        type: 'img',
+        caption: "Breathing with the collective. Talk with the teachers or make lunch with friends?",
+        left: '/assets/checkpoints/4-2.png',
+        right: '/assets/checkpoints/4-2.png',
+        key: 'five-path',
+        captionLeft: "Talk with the teachers",
+        captionRight: "Make lunch with friends"
+      }
+    }
+  },
+  {
+    id: 'five',
+    items: {
+      start: {
+        type: 'img',
+        captionLeft: "Taking a moment to connect with Janne and Kaio, the meditation teachers.",
+        captionRight: "Mmm what should we cook?",
+        left: '/assets/checkpoints/5-1a.png',
+        right: '/assets/checkpoints/5-1b.png',
+        follow: 'five-path'
+      },
+      video: {
+        type: 'vid',
+        left: '/assets/transitions/5a.mp4',
+        right: '/assets/transitions/5b.mp4',
+        follow: 'five-path'
+      },
+      end: {
+        type: 'img',
+        captionLeft: "Deepening my understanding of Buddhist meditation.",
+        captionRight: "Eating tacos for lunch!",
+        left: '/assets/checkpoints/5-2a.png',
+        right: '/assets/checkpoints/5-2b.png',
+        follow: 'five-path'
+      }
+    }
+  },
+  {
+    id: 'six',
+    items: {
+      start: {
+        type: 'img',
+        caption: "Heading to Le Village for a talk about vibecoding telegram chatbots.",
+        src: '/assets/checkpoints/6-1.png'
+      },
+      video: {
+        type: 'vid',
+        src: '/assets/transitions/6.mp4'
+      },
+      end: {
+        type: 'img',
+        caption: "We made a meditation chatbot!",
+        src: '/assets/checkpoints/6-2.png'
+      }
+    }
+  },
+  {
+    id: 'seven',
+    items: {
+      start: {
+        type: 'img',
+        caption: "Another day is over.",
+        src: '/assets/checkpoints/7-1.png'
+      },
+      video: {
+        type: 'vid',
+        src: '/assets/transitions/7.mp4'
+      },
+      end: {
+        type: 'img',
+        caption: "This is real life.",
+        src: '/assets/checkpoints/7-2.png'
+      }
+    }
+  },
+  {
+    id: 'eight',
+    items: {
+      start: {
+        type: 'img',
+        caption: "A new way of life?",
+        src: '/assets/checkpoints/8-1.png'
+      },
+      video: {
+        type: 'vid',
+        src: '/assets/transitions/8.mp4'
+      },
+      end: {
+        type: 'img',
+        caption: "This is real life.",
+        src: '/assets/checkpoints/8-2.png'
+      }
+    }
+  },
 ];
 
 const imgCache = new Map();
 const vidCache = new Map();
 
-const isVideo = u => /\.(mp4|webm|mov)$/i.test(u||'');
+const isVideo = u => /\.(mp4|webm|mov)$/i.test(u || '');
 
 const collectUrls = () => {
   const s = new Set();
-  for (const {items} of SCENES) {
+  for (const { items } of SCENES) {
     for (const it of [items.start, items.video, items.end]) {
       if (!it) continue;
       [it.src, it.left, it.right].forEach(u => u && s.add(u));
@@ -121,7 +337,7 @@ const preloadImage = u => new Promise(ok => {
 
 const preloadVideo = u => new Promise(ok => {
   const v = document.createElement('video');
-  Object.assign(v, { src:u, preload:'auto', muted:true, playsInline:true });
+  Object.assign(v, { src: u, preload: 'auto', muted: true, playsInline: true });
   const done = () => { cleanup(); vidCache.set(u, v); ok(); };
   const cleanup = () => {
     v.removeEventListener('canplaythrough', done);
@@ -130,10 +346,10 @@ const preloadVideo = u => new Promise(ok => {
     v.removeEventListener('error', done);
     clearTimeout(t);
   };
-  v.addEventListener('canplaythrough', done, {once:true});
-  v.addEventListener('loadeddata', done, {once:true});
-  v.addEventListener('loadedmetadata', done, {once:true});
-  v.addEventListener('error', done, {once:true});
+  v.addEventListener('canplaythrough', done, { once: true });
+  v.addEventListener('loadeddata', done, { once: true });
+  v.addEventListener('loadedmetadata', done, { once: true });
+  v.addEventListener('error', done, { once: true });
   const t = setTimeout(done, 3000);
   v.load();
 });
@@ -149,8 +365,20 @@ const slot = document.getElementById('slot');
 const captionEl = document.getElementById('captionEl');
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const applyHue = i => { const [h,s,l] = SCENE_HUES[i]; root.style.setProperty('--h',h); root.style.setProperty('--s',s+'%'); root.style.setProperty('--l',l+'%'); };
-const render = (node,text) => { node.classList.add('media'); slot.innerHTML=''; slot.appendChild(node); captionEl.textContent=text||''; player.classList.remove('ready'); requestAnimationFrame(()=>player.classList.add('ready')); };
+const applyHue = i => {
+  const [h, s, l] = SCENE_HUES[i];
+  root.style.setProperty('--h', h);
+  root.style.setProperty('--s', s + '%');
+  root.style.setProperty('--l', l + '%');
+};
+const render = (node, text) => {
+  node.classList.add('media');
+  slot.innerHTML = '';
+  slot.appendChild(node);
+  captionEl.textContent = text || '';
+  player.classList.remove('ready');
+  requestAnimationFrame(() => player.classList.add('ready'));
+};
 
 const path = {}; // 'two-start'/'two-end'/...
 
@@ -168,7 +396,7 @@ function awaitChoice(key) {
   return new Promise(res => {
     const on = e => {
       const k = e.key;
-      const left  = (k === 'ArrowLeft'  || k === 'Left');
+      const left = (k === 'ArrowLeft' || k === 'Left');
       const right = (k === 'ArrowRight' || k === 'Right');
       if (!left && !right) return;
       removeEventListener('keydown', on);
@@ -179,12 +407,12 @@ function awaitChoice(key) {
   });
 }
 
-const urlFor = it => it.follow ? (it[path[it.follow]||'left'] || it.src) : it.src;
+const urlFor = it => it.follow ? (it[path[it.follow] || 'left'] || it.src) : it.src;
 const captionFor = (it, startCap) => {
   if (it.follow) {
     const side = path[it.follow] || 'left';
-    if (side==='left' && it.captionLeft)  return it.captionLeft;
-    if (side==='right'&& it.captionRight) return it.captionRight;
+    if (side === 'left' && it.captionLeft) return it.captionLeft;
+    if (side === 'right' && it.captionRight) return it.captionRight;
   }
   return (it.caption != null) ? it.caption : (startCap || '');
 };
@@ -192,7 +420,7 @@ const captionFor = (it, startCap) => {
 async function showStill(sceneId, it, isStart, startCapRef) {
   const interactive = !!(it.left && it.right && it.key);
   const hasFollow = !!it.follow;
-  
+
   if (hasFollow && interactive) {
     // First show conditional caption/image based on previous choice
     const url = urlFor(it);
@@ -205,7 +433,7 @@ async function showStill(sceneId, it, isStart, startCapRef) {
     // Choice is made, transition to next scene (don't show another image)
     return;
   }
-  
+
   if (interactive) {
     // caption-only while waiting for choice
     showChoiceUI(it.caption);
@@ -216,7 +444,7 @@ async function showStill(sceneId, it, isStart, startCapRef) {
     }
     const side = path[it.key || sceneId];
     const chosenUrl = it[side] || it.src || it.left || it.right;
-    const chosenCap = side==='left' ? (it.captionLeft || it.caption || '')
+    const chosenCap = side === 'left' ? (it.captionLeft || it.caption || '')
                                     : (it.captionRight || it.caption || '');
     render(imgCache.get(chosenUrl), chosenCap);
     await wait(STILL_MS);
@@ -236,7 +464,7 @@ async function playVideo(it, startCapRef) {
   v.currentTime = 0;
   render(v, cap);
   v.play();
-  await new Promise(done => v.addEventListener('ended', done, { once:true }));
+  await new Promise(done => v.addEventListener('ended', done, { once: true }));
 }
 
 async function play() {
