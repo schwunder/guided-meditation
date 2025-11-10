@@ -1,0 +1,189 @@
+#!/usr/bin/env bun
+/**
+ * Pre-Skill-Use Hook
+ *
+ * Runs before any skill launches to inject context and validate prerequisites.
+ *
+ * Injects:
+ * - Context from previous skill reports
+ * - Project constraints and preferences
+ * - Validated capabilities from earlier steps
+ *
+ * Validates:
+ * - Prerequisites are met (previous skills completed)
+ * - Required files exist
+ */
+
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+interface HookInput {
+  skill_name?: string;
+  skill_base_dir?: string;
+  prompt?: string;
+}
+
+// Read hook input from stdin
+const input = await Bun.stdin.text();
+const hookInput: HookInput = JSON.parse(input);
+
+const skillName = hookInput.skill_name;
+const prompt = hookInput.prompt || "";
+
+if (!skillName) {
+  console.log(JSON.stringify({ prompt }));
+  process.exit(0);
+}
+
+try {
+  let enhancedPrompt = prompt;
+
+  switch (skillName) {
+    case "explore-concepts-and-specs":
+      enhancedPrompt = await enhanceConceptsPrompt(prompt);
+      break;
+
+    case "visualize-architecture":
+      enhancedPrompt = await enhanceArchitecturePrompt(prompt);
+      break;
+
+    case "explore-implementation-options":
+      enhancedPrompt = await enhanceImplementationPrompt(prompt);
+      break;
+
+    case "design-variation-logic":
+      enhancedPrompt = await enhanceVariationLogicPrompt(prompt);
+      break;
+
+    case "design-browser-render":
+    case "design-terminal-render": // backward compatibility
+      enhancedPrompt = await enhanceBrowserRenderPrompt(prompt);
+      break;
+
+    case "implement-core-app":
+      enhancedPrompt = await enhanceImplementationPrompt(prompt);
+      break;
+
+    default:
+      // No specific enhancement for this skill
+      break;
+  }
+
+  console.log(JSON.stringify({ prompt: enhancedPrompt }));
+  process.exit(0);
+} catch (error) {
+  console.error(JSON.stringify({ systemMessage: `Pre-skill validation failed: ${error}` }));
+  process.exit(2);
+}
+
+/**
+ * Enhance explore-concepts-and-specs prompt with terminal capabilities
+ */
+async function enhanceConceptsPrompt(prompt: string): Promise<string> {
+  const capabilitiesPath = ".claude/skills/validate-terminal-capability/REPORT.md";
+
+  if (existsSync(capabilitiesPath)) {
+    const capabilities = readFileSync(capabilitiesPath, "utf-8");
+    return `${prompt}\n\n## Available Terminal Capabilities\n\n${capabilities}`;
+  }
+
+  return prompt;
+}
+
+/**
+ * Enhance visualize-architecture prompt with chosen concept
+ */
+async function enhanceArchitecturePrompt(prompt: string): Promise<string> {
+  const chosenPath = ".claude/skills/explore-concepts-and-specs/CHOSEN.md";
+
+  if (!existsSync(chosenPath)) {
+    throw new Error("Prerequisites not met: explore-concepts-and-specs must run first");
+  }
+
+  const chosen = readFileSync(chosenPath, "utf-8");
+  return `${prompt}\n\n## Chosen Concept to Visualize\n\n${chosen}`;
+}
+
+/**
+ * Enhance explore-implementation-options with architecture diagrams
+ */
+async function enhanceImplementationPrompt(prompt: string): Promise<string> {
+  const diagramsPath = ".claude/skills/visualize-architecture/DIAGRAMS.md";
+
+  if (existsSync(diagramsPath)) {
+    const diagrams = readFileSync(diagramsPath, "utf-8");
+    return `${prompt}\n\n## Architecture Diagrams for Reference\n\n${diagrams}`;
+  }
+
+  return prompt;
+}
+
+/**
+ * Enhance design-variation-logic with concept specs
+ */
+async function enhanceVariationLogicPrompt(prompt: string): Promise<string> {
+  const chosenPath = ".claude/skills/explore-concepts-and-specs/CHOSEN.md";
+
+  if (existsSync(chosenPath)) {
+    const chosen = readFileSync(chosenPath, "utf-8");
+    return `${prompt}\n\n## Concept Specifications\n\n${chosen}`;
+  }
+
+  return prompt;
+}
+
+/**
+ * Enhance design-browser-render with architecture
+ */
+async function enhanceBrowserRenderPrompt(prompt: string): Promise<string> {
+  const diagramsPath = ".claude/skills/visualize-architecture/DIAGRAMS.md";
+
+  if (existsSync(diagramsPath)) {
+    const diagrams = readFileSync(diagramsPath, "utf-8");
+    return `${prompt}\n\n## Architecture for Rendering\n\n${diagrams}`;
+  }
+
+  return prompt;
+}
+
+/**
+ * Enhance implement-core-app with all design specs
+ */
+async function enhanceImplementationPrompt(prompt: string): Promise<string> {
+  let enhanced = prompt;
+
+  // Add chosen concept
+  const chosenPath = ".claude/skills/explore-concepts-and-specs/CHOSEN.md";
+  if (existsSync(chosenPath)) {
+    const chosen = readFileSync(chosenPath, "utf-8");
+    enhanced += `\n\n## Chosen Concept\n\n${chosen}`;
+  }
+
+  // Add architecture diagrams
+  const diagramsPath = ".claude/skills/visualize-architecture/DIAGRAMS.md";
+  if (existsSync(diagramsPath)) {
+    const diagrams = readFileSync(diagramsPath, "utf-8");
+    enhanced += `\n\n## Architecture Diagrams\n\n${diagrams}`;
+  }
+
+  // Add variation logic design
+  const variationPath = ".claude/skills/design-variation-logic/DESIGN.md";
+  if (existsSync(variationPath)) {
+    const variation = readFileSync(variationPath, "utf-8");
+    enhanced += `\n\n## Variation Logic Design\n\n${variation}`;
+  }
+
+  // Add render design
+  const browserRenderPath = ".claude/skills/design-browser-render/LAYOUT.md";
+  const terminalRenderPath = ".claude/skills/design-terminal-render/LAYOUT.md";
+
+  if (existsSync(browserRenderPath)) {
+    const render = readFileSync(browserRenderPath, "utf-8");
+    enhanced += `\n\n## Browser Render Design\n\n${render}`;
+  } else if (existsSync(terminalRenderPath)) {
+    const render = readFileSync(terminalRenderPath, "utf-8");
+    enhanced += `\n\n## Browser Render Design\n\n${render}`;
+  }
+
+  return enhanced;
+}

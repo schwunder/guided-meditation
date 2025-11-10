@@ -1,0 +1,174 @@
+#!/usr/bin/env bun
+/**
+ * Post-Skill-Use Hook
+ *
+ * Runs after any skill completes to validate outputs.
+ *
+ * Validates:
+ * - explore-concepts-and-specs: Check CHOSEN.md exists and is complete
+ * - visualize-architecture: Validate Mermaid syntax in DIAGRAMS.md
+ * - design-variation-logic: Verify algorithm specs are detailed
+ * - design-browser-render: Check rendering specs are feasible
+ */
+
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+interface HookInput {
+  skill_name?: string;
+  skill_base_dir?: string;
+}
+
+// Read hook input from stdin
+const input = await Bun.stdin.text();
+const hookInput: HookInput = JSON.parse(input);
+
+const skillName = hookInput.skill_name;
+const skillBaseDir = hookInput.skill_base_dir;
+
+if (!skillName || !skillBaseDir) {
+  console.log(JSON.stringify({ systemMessage: "Success" }));
+  process.exit(0);
+}
+
+try {
+  switch (skillName) {
+    case "explore-concepts-and-specs":
+      await validateConceptsAndSpecs(skillBaseDir);
+      break;
+
+    case "visualize-architecture":
+      await validateArchitecture(skillBaseDir);
+      break;
+
+    case "design-variation-logic":
+      await validateVariationLogic(skillBaseDir);
+      break;
+
+    case "design-browser-render":
+    case "design-terminal-render": // backward compatibility
+      await validateBrowserRender(skillBaseDir);
+      break;
+
+    default:
+      // No specific validation for this skill
+      break;
+  }
+
+  console.log(JSON.stringify({ systemMessage: "Success" }));
+  process.exit(0);
+} catch (error) {
+  console.error(JSON.stringify({ systemMessage: `Validation failed: ${error}` }));
+  process.exit(2);
+}
+
+/**
+ * Validate explore-concepts-and-specs output
+ */
+async function validateConceptsAndSpecs(baseDir: string): Promise<void> {
+  const chosenPath = resolve(baseDir, "CHOSEN.md");
+
+  if (!existsSync(chosenPath)) {
+    throw new Error("CHOSEN.md not found - concept selection incomplete");
+  }
+
+  const content = readFileSync(chosenPath, "utf-8");
+
+  // Check for required sections
+  const requiredSections = [
+    "Requirements",
+    "Specifications",
+    "Goals",
+    "Features",
+    "Trade-offs",
+  ];
+
+  for (const section of requiredSections) {
+    if (!content.includes(section)) {
+      throw new Error(`CHOSEN.md missing required section: ${section}`);
+    }
+  }
+
+  // Check for some actual content (not just headers)
+  if (content.length < 500) {
+    throw new Error("CHOSEN.md appears incomplete (too short)");
+  }
+}
+
+/**
+ * Validate visualize-architecture output
+ */
+async function validateArchitecture(baseDir: string): Promise<void> {
+  const diagramsPath = resolve(baseDir, "DIAGRAMS.md");
+
+  if (!existsSync(diagramsPath)) {
+    throw new Error("DIAGRAMS.md not found - architecture visualization incomplete");
+  }
+
+  const content = readFileSync(diagramsPath, "utf-8");
+
+  // Check for Mermaid code blocks
+  const mermaidBlocks = content.match(/```mermaid[\s\S]*?```/g);
+
+  if (!mermaidBlocks || mermaidBlocks.length === 0) {
+    throw new Error("DIAGRAMS.md contains no Mermaid diagrams");
+  }
+
+  // Basic Mermaid syntax validation
+  for (const block of mermaidBlocks) {
+    if (
+      !block.includes("graph") &&
+      !block.includes("flowchart") &&
+      !block.includes("sequenceDiagram") &&
+      !block.includes("stateDiagram") &&
+      !block.includes("classDiagram")
+    ) {
+      throw new Error("Invalid Mermaid diagram type detected");
+    }
+  }
+
+  // Check for at least 2 diagram types
+  if (mermaidBlocks.length < 2) {
+    throw new Error("Expected at least 2 different diagram types in DIAGRAMS.md");
+  }
+}
+
+/**
+ * Validate design-variation-logic output
+ */
+async function validateVariationLogic(baseDir: string): Promise<void> {
+  const designPath = resolve(baseDir, "DESIGN.md");
+
+  if (!existsSync(designPath)) {
+    throw new Error("DESIGN.md not found - variation logic design incomplete");
+  }
+
+  const content = readFileSync(designPath, "utf-8");
+
+  // Check for algorithm specifications
+  const requiredSections = ["Strategy", "Boundaries", "Refinement", "Distinctness"];
+
+  for (const section of requiredSections) {
+    if (!content.includes(section)) {
+      throw new Error(`DESIGN.md missing required section: ${section}`);
+    }
+  }
+}
+
+/**
+ * Validate design-browser-render output
+ */
+async function validateBrowserRender(baseDir: string): Promise<void> {
+  const layoutPath = resolve(baseDir, "LAYOUT.md");
+
+  if (!existsSync(layoutPath)) {
+    throw new Error("LAYOUT.md not found - browser render design incomplete");
+  }
+
+  const content = readFileSync(layoutPath, "utf-8");
+
+  // Check for rendering specifications
+  if (!content.includes("Visual") && !content.includes("Render")) {
+    throw new Error("LAYOUT.md missing rendering specifications");
+  }
+}

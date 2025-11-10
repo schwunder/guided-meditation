@@ -1,8 +1,8 @@
-name: Build & Deploy (Bun → GitHub Pages)
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,14 +11,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      outdir: ${{ steps.detect.outputs.outdir }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,106 +26,18 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install dependencies (if package.json)
+      - name: Copy static files
         run: |
-          if [ -f package.json ]; then
-            bun install --frozen-lockfile || bun install
-          fi
+          mkdir -p dist
+          cp -R public/* dist/
 
-      - name: Build (prefer scripts; else copy static)
-        id: build
-        run: |
-          set -euo pipefail
-          # default OUTDIR
-          OUTDIR="dist"
-          rm -rf dist || true
-
-          has_build_script() {
-            [ -f package.json ] && bun -e "try{process.exit(require('./package.json').scripts?.build?0:1)}catch{process.exit(1)}"
-          }
-
-          if has_build_script; then
-            echo "Running: bun run build"
-            if ! bun run build; then
-              echo "bun run build failed; attempting common fallbacks"
-              # common fallback: try vite build if available via bunx
-              bunx --yes vite build || true
-            fi
-            # detect output dir
-            for d in dist build out .output/public; do
-              if [ -d "$d" ]; then OUTDIR="$d"; break; fi
-            done
-            # if still nothing, fall back to public/docs/root copy
-            if [ ! -d "$OUTDIR" ]; then
-              mkdir -p dist
-              if [ -d public ]; then cp -R public/* dist/ || true
-              elif [ -d docs ]; then cp -R docs/* dist/ || true
-              else
-                [ -f index.html ] && cp index.html dist/
-                [ -d assets ] && cp -R assets dist/ || true
-              fi
-              OUTDIR="dist"
-            fi
-          else
-            echo "No build script; copying static files"
-            mkdir -p dist
-            if [ -d public ]; then
-              cp -R public/* dist/ || true
-            elif [ -d docs ]; then
-              cp -R docs/* dist/ || true
-            else
-              [ -f index.html ] && cp index.html dist/
-              [ -d assets ] && cp -R assets dist/ || true
-            fi
-            OUTDIR="dist"
-          fi
-
-          echo "OUTDIR=$OUTDIR"
-          echo "outdir=$OUTDIR" >> "$GITHUB_OUTPUT"
-
-      - name: Prepare Pages artifact (base href, SPA fallback, .nojekyll, CNAME)
-        id: detect
-        env:
-          OWNER_REPO: ${{ github.repository }}
-          CUSTOM_DOMAIN: ${{ vars.PAGES_CUSTOM_DOMAIN }}
-        run: |
-          set -euo pipefail
-          OUTDIR="${{ steps.build.outputs.outdir }}"
-          OWNER="${OWNER_REPO%%/*}"
-          REPO="${OWNER_REPO##*/}"
-
-          # Inject <base href> if root-absolute paths and no base present
-          if [ -f "$OUTDIR/index.html" ]; then
-            if ! grep -qi "<base " "$OUTDIR/index.html"; then
-              if grep -Eqi ' (src|href)="/' "$OUTDIR/index.html"; then
-                echo "Injecting <base href=\"/$REPO/\"> into $OUTDIR/index.html"
-                awk -v repo="$REPO" 'BEGIN{added=0}
-                  {print}
-                  /<head[^>]*>/ && !added { print "<base href=\"/"repo"/\">"; added=1 }
-                ' "$OUTDIR/index.html" > "$OUTDIR/.index.tmp" && mv "$OUTDIR/.index.tmp" "$OUTDIR/index.html"
-              fi
-            fi
-          fi
-
-          # SPA fallback: 404.html mirrors index.html
-          if [ -f "$OUTDIR/index.html" ] && [ ! -f "$OUTDIR/404.html" ]; then
-            cp "$OUTDIR/index.html" "$OUTDIR/404.html"
-          fi
-
-          # Disable Jekyll
-          touch "$OUTDIR/.nojekyll"
-
-          # Optional custom domain via repo var PAGES_CUSTOM_DOMAIN
-          if [ -n "${CUSTOM_DOMAIN:-}" ]; then
-            echo "$CUSTOM_DOMAIN" > "$OUTDIR/CNAME"
-          fi
-
-          echo "outdir=$OUTDIR" >> "$GITHUB_OUTPUT"
+      - name: Create .nojekyll
+        run: touch dist/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ steps.detect.outputs.outdir }}
+          path: ./dist
 
   deploy:
     needs: build
