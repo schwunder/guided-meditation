@@ -12,26 +12,29 @@ Interactive guided meditation experience with static HTML sequences, lightweight
 - Follow Biome's recommended rules
 
 ### JavaScript Conventions
-- `public/main.js` is currently 344 lines (HTML parsing, media cache, stage rendering)
+- All JavaScript is inline in `public/index.html` (~201 lines in `<script>` block)
+- Uses `SCENES` array with 8 scenes ('one' through 'eight')
+- Scene structure: `{ id, phases: { intro, transition, outro } }`
 - Prefer explicit `if` blocks over ternaries for readability
-- Use Maps for media caching, data attributes for configuration
+- Use Map for media caching (`mediaCache`)
 - Minimal logging: only `console.error` for actual failures
-- No JSON fetching - sequences defined in HTML markup
+- No JSON fetching - all scene data defined inline
 
 ### CSS Conventions
-- All styling in CSS, not inline styles or JS mutations
+- All styling in CSS (~62 lines in `<style>` block), not inline styles or JS mutations
 - Use CSS custom properties for timing and theming
-- Utility classes for common patterns (`.radiant-border`, `.caption`, `.choices`)
-- CSS variables contract: `--transition-duration-fade`, `--checkpoint-hold-ms`, `--accent-hue-*`
+- Scene-specific theming via `:root[data-scene="N"]` attributes (sets `--hue`, `--sat`, `--lum`)
+- CSS variables: `--hue`, `--sat`, `--lum`, `--breath`, `--surface-bg`, `--caption-bg`, `--text`, `--shadow`
 
 ## File Organization
 
 ### Project Structure
 ```
 public/
-├── index.html              # Main entry point with embedded sequences
-├── main.js                 # Timeline orchestration (344 lines)
-└── assets/                 # Media assets (checkpoints, transitions, chakras)
+├── index.html              # Single file with all code inline (303 lines: ~62 CSS + ~201 JS)
+└── assets/                 # Media assets (checkpoints, transitions)
+    ├── checkpoints/        # Still images (1-1.png through 8-2.png)
+    └── transitions/        # Video clips (1.mp4, 2a.mp4, 2b.mp4, etc.)
 
 notes/                      # Detailed development documentation
 ├── features.md            # Implemented and planned features (including 7-chakra vision)
@@ -40,31 +43,30 @@ notes/                      # Detailed development documentation
 ├── cursor-setup.md        # Cursor IDE setup guide
 └── refactor.md            # Architecture principles and refactor notes
 
-docs/                       # Summary documentation (shorter versions)
-├── fix.md                 # Outstanding fixes summary
-└── refactor.md            # Refactor summary
-
-.claude/
+.claude/                    # Claude Code integration
 ├── hooks/                  # Automated event hooks
 └── skills/                 # Specialized agent skills
-    └── visualize-architecture/DIAGRAMS.md  # Architecture diagrams
 
 mermaid diagrams/          # Mermaid diagram files (.mmd or .md)
 
 .cursor/                    # Cursor IDE configuration
 biome.json                  # Biome.js configuration
-chakra-sequence-spec.json  # 7-chakra sequence specification (reference)
+server.js                   # Bun HTTP server (23 lines)
 ```
 
-### HTML Sequence Structure
-- Sequences defined with `data-sequence-source` and `data-sequence-item` attributes
-- Each sequence has `data-sequence-id` and inline CSS variables for theming
-- Currently 2 sequences: "arrival" (blue/magenta) and "kitchen" (orange/teal)
+### Scene Structure
+- 8 scenes defined in JavaScript `SCENES` array: 'one' through 'eight'
+- Each scene has `{ id, phases: { intro, transition, outro } }`
+- Step types:
+  - Simple: `{ type, src, caption }` - single asset
+  - Interactive: `{ type, left, right, choiceKey, captionLeft, captionRight }` - user chooses path
+  - Conditional: `{ type, left, right, dependsOn }` - follows previous choice
+- Theming via CSS `:root[data-scene="1"]` through `:root[data-scene="8"]` attributes
 - Plan for 7 chakra sequences (see `notes/features.md`)
 
 ### Documentation Files
-- Keep `README.md` in root
-- Move project docs to `docs/` folder
+- Keep `README.md` and `CLAUDE.md` in root
+- Detailed docs in `notes/` folder
 - Use lowercase filenames for consistency (`context.md` not `CONTEXT.md`)
 - Mermaid diagrams go in `mermaid diagrams/` folder
 
@@ -135,10 +137,10 @@ chakra-sequence-spec.json  # 7-chakra sequence specification (reference)
 ## Code Quality
 
 ### When Editing
-- Keep `public/main.js` under ~200 lines
-- Extract complex logic to CSS/HTML when possible
+- Keep `public/index.html` concise (~300 lines total)
+- Keep JavaScript in `<script>` block around ~200 lines
+- Extract complex logic to CSS when possible
 - Prefer CSS classes over inline styles
-- Use utility classes for common patterns
 - Maintain CSS variables contract
 
 ### Linting
@@ -158,11 +160,10 @@ public/assets/
 ```
 
 ### Naming Convention
-- Format: `{type}-{subject}.{ext}`
-- Examples:
-  - `image-sunrise-meditation-room.png`
-  - `choice-communal-beach-circle.jpg`
-  - `1-video-1.mp4` (transitions)
+- Checkpoints: `{scene}-{phase}.png` (e.g., `1-1.png`, `2-2a.png`, `2-2b.png`)
+- Transitions: `{scene}{variant}.mp4` (e.g., `1.mp4`, `2a.mp4`, `2b.mp4`)
+- Variants (a/b) used for branching paths
+- Scene numbers: 1 through 8
 
 ## Cursor IDE Integration
 
@@ -170,7 +171,7 @@ public/assets/
 - Biome formatter (for code formatting)
 - Mermaid viewer (for diagram preview)
 - File folding extension (for code organization)
-- See `docs/cursor-setup.md` for complete list
+- See `notes/cursor-setup.md` for complete list
 
 ### File Folding
 - Configure Cursor to fold long files automatically

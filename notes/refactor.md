@@ -1,29 +1,54 @@
-# Static Sequence Refactor Plan
+# Static Sequence Architecture (Completed)
 
-## Guardrails
-- **HTML-first flow** — Encode both sequences directly in `public/index.html`. Each checkpoint gets its own markup (copy, media source, captions) so JavaScript never fabricates DOM.
-- **CSS for presentation** — Any visual change (layout, transitions, colors) belongs in CSS. JavaScript should only toggle class names or custom properties already defined in the stylesheet.
-- **Lean `main.js`** — Cap the script at ~200 lines. No ternaries; rely on straightforward `if`/`else` blocks. Keep logic focused on progression and event wiring.
-- **Quiet logging** — Only emit `console.error` on real failures. Avoid status banners, success toasts, or speculative warnings.
+## Current State
+The refactor to static HTML inline architecture is **complete**. All code is now inline in `public/index.html` (CSS, JavaScript, and HTML structure all in one file).
 
-## Execution Steps
-1. **Inline the sequences**  
-   - Replace references to `sequence.json` and `checkpoint-metadata.json` with two static `<section class="sequence">` blocks.  
-   - Include all textual content, asset paths, and alt text directly in the HTML.
-2. **Shift styling to CSS**  
-   - Move inline styles and JS-driven styling into dedicated classes or custom properties.  
-   - Ensure animations/transitions can be triggered with simple class toggles.
-3. **Trim `public/main.js`**  
-   - Remove fetch/merge logic and template cloning.  
-   - Keep only the timeline controller, DOM lookups, and simple helpers; verify file length stays near 200 lines.
-4. **Simplify error handling**  
-   - Delete status banner plumbing.  
-   - Guard critical steps (missing elements, failed media play) with plain `if` checks and `console.error` calls.
-5. **Verify server setup**  
-   - Confirm `server.js` serves the updated static HTML/CSS/JS without expecting JSON routes.
+## Architecture Principles (Achieved)
+
+### HTML-First Flow ✅
+- All sequences encoded directly in `public/index.html` within the `SCENES` JavaScript array
+- Scene data, captions, and media references are defined inline
+- JavaScript never fabricates DOM - only manipulates existing elements
+
+### CSS for Presentation ✅
+- All styling in CSS (`<style>` block)
+- Visual changes (layout, transitions, colors) handled via CSS
+- JavaScript only toggles class names and updates `dataset.scene` attribute
+- CSS custom properties control theming (`--hue`, `--sat`, `--lum`, `--breath`, etc.)
+- Scene-specific theming via `:root[data-scene="N"]` attributes (N = 1-8)
+
+### Lean JavaScript ✅
+- JavaScript in `<script>` block
+- No ternaries; uses straightforward `if`/`else` blocks
+- Logic focused on progression (`runShow()`, `playStep()`) and event wiring (`waitForArrowChoice()`)
+- Media caching via `mediaCache` Map
+- Choice system via `choiceByKey` object
+
+### Quiet Logging ✅
+- Only `console.error()` for real failures
+- No status banners, success toasts, or verbose diagnostics
+- Fail-open error handling (media preload timeouts, graceful degradation)
+
+## Implementation Details
+
+### Scene Structure
+- 8 scenes defined in `SCENES` array: 'one' through 'eight'
+- Each scene has `{ id, phases: { intro, transition, outro } }`
+- Step types: simple, interactive (choice), conditional (dependsOn), compound (reveal + choice)
+
+### Media Handling
+- Single `mediaCache` Map stores all preloaded assets (url → Image|HTMLVideoElement)
+- `preload()` function with fail-open 2000ms timeout per video
+- Boot script collects all URLs before calling `runShow()`
+
+### Server Setup ✅
+- `server.js` serves static files only (no JSON routes)
+- Serves `/` → `index.html`, `/assets/*` → asset files
+- No dynamic endpoints needed
 
 ## Follow-up Ideas
-- Revisit accessibility once the static markup is locked.  
-- Document the sequence structure with comments inside the HTML for future editors.  
-- Consider splitting CSS into thematic sections if utility class count grows.
+- Revisit accessibility (ARIA labels, keyboard focus management)
+- Add per-asset progress feedback during preload
+- Implement touch/pointer events for mobile choice interaction
+- Build out 7-chakra sequence plan (see `notes/features.md`)
 

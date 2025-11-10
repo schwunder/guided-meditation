@@ -1,13 +1,15 @@
 # Guided Meditation
+
 Interactive guided meditation experience delivered as a single HTML file with inline CSS and JavaScript, featuring 8 scenes with branching paths based on user choices.
 
 ## Architecture Overview
+
 | Layer | Responsibilities |
 | --- | --- |
-| Single HTML file (`public/index.html`) | Contains all code inline: CSS (~100 lines) in a `<style>` block and JavaScript (~365 lines) in a `<script>` block. The HTML structure includes a simple player container with a media slot and caption element. All visual styling, animations, and theming are handled via CSS custom properties. |
-| Inline CSS (`<style>` block) | Layout, color, animation, and responsive states. Timing values and color accents are handled with CSS custom properties (e.g., `--h`, `--s`, `--l`, `--fade`, `--border`). Each scene dynamically updates hue values for smooth color transitions. |
-| Inline JavaScript (`<script>` block) | ~365 lines that manage the `SCENES` array (8 scenes), handle media preloading and caching via Map objects, orchestrate playback flow, and manage interactive choices via arrow key input. Uses straightforward conditionals and only minimal `console.error` output when a real failure occurs. |
-| Dev server (`server.js`) | Bun-based static server that serves `index.html` and media assets from `/assets/` without any JSON endpoints or dynamic routes. |
+| Single HTML file (`public/index.html`) | All code inline: CSS in `<style>`, JavaScript in `<script>`. Stage container with media host and caption. Visual styling via CSS custom properties. |
+| Inline CSS | Layout, color, animation, responsive states. CSS custom properties (`--hue`, `--sat`, `--lum`, `--breath`). Scene theming via `:root[data-scene="N"]`. |
+| Inline JavaScript | Manages `SCENES` array (8 scenes), media preloading/caching via Map, playback flow with `playStep()`, interactive choices via arrow keys. Minimal `console.error` output. |
+| Dev server (`server.js`) | Bun-based static server serves `index.html` and assets from `/assets/`. No JSON endpoints or dynamic routes. |
 
 ## Development
 
@@ -16,94 +18,43 @@ Interactive guided meditation experience delivered as a single HTML file with in
 bun server.js  # Start server on http://localhost:8080
 ```
 
-### Editing the experience
-- Update scene content, captions, and media references by editing the `SCENES` array in the `<script>` block of `public/index.html`. Each scene has `start`, `video`, and `end` items. The project includes 8 scenes with branching paths based on user arrow key choices (← / →).
-- Add or restyle visuals through CSS classes in the `<style>` block. New utility classes should live alongside existing ones. CSS custom properties control timing (`--fade`, `--border`) and theming (`--h`, `--s`, `--l`).
-- Keep the JavaScript focused on orchestration: DOM lookups, scene progression, media caching, and choice handling. If something feels longer than a few lines, prefer extracting it into CSS/HTML instead.
-- Error handling is intentionally quiet. Only log with `console.error` when an action truly fails (missing element, media that cannot play, etc.); otherwise, let the flow continue without status banners.
+### Editing the Experience
+- **Scenes:** Edit `SCENES` array in `<script>` block. Each scene has `{ id, phases: { intro, transition, outro } }`. 8 scenes with branching paths via arrow keys (← / →).
+- **Styling:** Modify CSS in `<style>` block. CSS custom properties control timing (`--breath`) and theming (`--hue`, `--sat`, `--lum`). Scene colors via `:root[data-scene="N"]`.
+- **JavaScript:** Keep focused on orchestration—DOM lookups, scene progression, `mediaCache` Map, choice handling. Prefer CSS for visual changes.
+- **Error handling:** Quiet by design. Only `console.error` for real failures; no status banners.
 
 ### GitHub Pages Deployment
 
-This project includes automated deployment to GitHub Pages via `.github/workflows/deploy.yml`.
+Automated workflow (`.github/workflows/deploy.yml`): copies `public/*` to `dist/`, injects `<base href="/repo-name/">` for subpath routing, creates `.nojekyll`, deploys to GitHub Pages. All asset paths use relative paths (`assets/...`).
 
-**To enable:**
-1. Push to `main` branch or manually trigger via Actions tab
-2. Go to repository Settings → Pages
-3. Under "Source", select "GitHub Actions"
-4. The workflow will automatically build and deploy on every push to `main`
+## Project Structure
 
-The workflow:
-- Copies `public/*` to `dist/` (no build step needed)
-- Injects `<base href="/repo-name/">` for subpath routing
-- Creates `.nojekyll` to disable Jekyll processing
-- Deploys to `https://username.github.io/repo-name/`
-
-**Asset paths:** All asset references use relative paths (`assets/...`) to work with GitHub Pages subpath routing.
-
-## Project folders
-`public/` contains the single HTML entry point (`index.html`) with all CSS and JavaScript inline, plus all media assets. `server.js` serves `index.html` at the root and media assets from `/assets/`. No external JSON feeds are required; all scene data and metadata are defined in the `SCENES` array within the HTML file.
+`public/` contains `index.html` (all CSS/JS inline) plus media assets in `assets/checkpoints/` and `assets/transitions/`. `server.js` serves `index.html` at root and assets from `/assets/`. Scene data defined in `SCENES` array within HTML.
 
 ## Development with Claude Code
 
-This project uses Claude Code with custom skills and hooks for streamlined development:
+**Getting Started:** `npm install -g @anthropic-ai/claude-code` then `claude` in project directory.
 
-### Getting Started
-```bash
-npm install -g @anthropic-ai/claude-code
-cd guided-meditation
-claude
-```
+**Hooks** (`.claude/hooks/`): `user-prompt-submit`, `pre-tool-use`, `post-tool-use`, `pre-skill-use`, `post-skill-use`.
 
-### Automated Hooks
-Located in `.claude/hooks/`, these scripts run automatically:
-- **user-prompt-submit** - Enhances prompts with project context
-- **pre-tool-use** - Validates before file modifications
-- **post-tool-use** - Runs linting after code changes
-- **pre-skill-use** - Injects context before skill execution
-- **post-skill-use** - Validates skill outputs
+**Skills** (`.claude/skills/`): `explore-concepts-and-specs`, `visualize-architecture`, `design-variation-logic`, `design-browser-render`, `check-code-quality`.
 
-### Available Skills
-Located in `.claude/skills/`, invoke for complex tasks:
-- **explore-concepts-and-specs** - Generate and evaluate feature concepts
-- **visualize-architecture** - Create Mermaid diagrams (see `.claude/skills/visualize-architecture/DIAGRAMS.md`)
-- **design-variation-logic** - Design branching and choice mechanics
-- **design-browser-render** - Design UI layouts and interactions
-- **check-code-quality** - Run linting and validation
+**Principles:** File-based communication (markdown in `notes/`), automation via hooks, skills for complexity, progressive disclosure.
 
-### Key Principles
-- **File-based communication** - Use markdown files for planning (see `notes/features.md`, `notes/fix.md`, `notes/refactor.md`, `notes/context.md`)
-- **Automation via hooks** - Repetitive checks run automatically on every tool use
-- **Skills for complexity** - Multi-step workflows use specialized agents
-- **Progressive disclosure** - Context loads only when needed, keeping sessions efficient
-
-See `CLAUDE.md` for detailed workflow documentation and `notes/context.md` for browser constraints and technical context.
+See `CLAUDE.md` for detailed workflow and `notes/context.md` for browser constraints.
 
 ## Cursor IDE Setup
 
-This project includes Cursor IDE configuration for optimal development experience:
+- **`.cursor/rules`** - Project-specific Cursor rules (source of truth)
+- **`notes/cursor-setup.md`** - Recommended extensions and configuration
 
-- **`.cursor/rules`** - Project-specific Cursor rules and guidelines
-- **`.cursorrules`** - Root-level Cursor rules (for compatibility)
-- **`notes/cursor-setup.md`** - Complete guide to recommended Cursor extensions and configuration
+**Quick Setup:** Install extensions (see `notes/cursor-setup.md`), Cursor uses `.cursor/rules` automatically, configure Biome.js formatter, enable Mermaid preview.
 
-### Quick Setup
-1. Install recommended extensions (see `notes/cursor-setup.md`)
-2. Cursor will automatically use `.cursor/rules` and `.cursorrules` for AI assistance
-3. Configure Biome.js formatter for auto-formatting on save
-4. Enable Mermaid preview for diagram files in `mermaid diagrams/` folder
+## Documentation Structure
 
-### Documentation Structure
-- **`notes/`** - Detailed development documentation
-  - `features.md` - Implemented and planned features (including 7-chakra vision)
-  - `fix.md` - Outstanding fixes and issues
-  - `context.md` - Browser constraints, data schemas, and technical context
-  - `cursor-setup.md` - Cursor IDE setup guide
-  - `refactor.md` - Architecture principles and refactor notes
-- **`docs/`** - Summary documentation (shorter versions)
-  - `fix.md` - Outstanding fixes summary
-  - `refactor.md` - Refactor summary
-- **`mermaid diagrams/`** - Mermaid diagram files (`.mmd` or `.md` with mermaid blocks)
-- **`.claude/skills/visualize-architecture/DIAGRAMS.md`** - Architecture diagrams (4 comprehensive Mermaid diagrams)
-- **`CLAUDE.md`** - Claude Code workflow and architecture overview
-- **`README.md`** - This file (project overview)
-
+- **`notes/`** - Development docs: `features.md`, `fix.md`, `context.md`, `cursor-setup.md`, `refactor.md`
+- **`mermaid diagrams/`** - Mermaid diagram files
+- **`.claude/`** - Claude Code integration (hooks and skills)
+- **`CLAUDE.md`** - Claude Code workflow overview
+- **`README.md`** - This file

@@ -9,10 +9,6 @@ Bun.serve({
       return new Response(Bun.file(`${PUBLIC_ROOT}/index.html`));
     }
 
-    if (pathname === '/main.js') {
-      return new Response(Bun.file(`${PUBLIC_ROOT}/main.js`));
-    }
-
     if (pathname.startsWith('/assets/')) {
       return new Response(Bun.file(`${PUBLIC_ROOT}${pathname}`));
     }
