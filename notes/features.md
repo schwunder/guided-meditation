@@ -1,98 +1,52 @@
 ## Implemented Features
+
 | Area | Highlights |
 | --- | --- |
-| Scene Flow | 8 scenes defined in inline `SCENES` JavaScript array (IDs: 'one' through 'eight'). `play()` iterates through scenes, calling `showStill()` for checkpoints and `playVideo()` for transitions. Checkpoints hold for `STILL_MS` (2500ms); transitions play until video `ended` event. |
-| Interactive Branching | Scenes can have interactive choice points with `left`/`right` assets and captions. Users press arrow keys (← / →) to choose paths. `path` object stores choices by `key`, and subsequent items with `follow` property conditionally render assets based on previous choices. Currently 3 choice points across 8 scenes. |
-| Media Preloading | `collectUrls()` gathers all asset URLs from `SCENES`, `preloadImage()` and `preloadVideo()` populate `imgCache` and `vidCache` Maps. Experience waits for all media to load before starting `play()`. |
-| Stage Presentation | `render()` swaps media nodes in DOM slot and updates caption text. CSS class `ready` toggles for fade transitions. Video playback uses native browser controls (muted, autoplay on render). |
-| Styling & Theming | CSS variables (`--h`, `--s`, `--l`, `--fade`, `--border`) control colors and timing. `SCENE_HUES` array defines 8 color triplets; `applyHue()` updates CSS properties per scene for smooth color transitions. `radiate` keyframe animation creates pulsing border glow. |
-| Asset Library | Media organized under `public/assets/checkpoints/` (PNG images) and `public/assets/transitions/` (MP4 videos). All assets referenced by URL strings in `SCENES` array. |
+| Scene Flow | 8 scenes in inline `SCENES` array ('one' through 'eight'). `runShow()` iterates scenes, `playStep()` handles phases (intro, transition, outro). Checkpoints hold 2500ms; transitions play until `ended`. |
+| Interactive Branching | Choice points with `left`/`right` assets. Arrow keys (← / →) choose paths. `choiceByKey` stores choices; `dependsOn` conditionally renders. 3 choice points across 8 scenes. |
+| Media Preloading | Boot script collects URLs, `preload()` populates `mediaCache` Map. Waits for all media before `runShow()`. Fail-open timeout 2000ms per video. |
+| Stage Presentation | `mountMedia()` swaps DOM nodes, updates captions. CSS `fadeIn` handles transitions. Videos use muted autoplay. |
+| Styling & Theming | CSS variables (`--hue`, `--sat`, `--lum`, `--breath`, etc.) control colors/timing. Scene theming via `:root[data-scene="N"]` (N = 1-8). `radiate` animation creates pulsing border glow. |
+| Asset Library | Media in `public/assets/checkpoints/` (PNG) and `public/assets/transitions/` (MP4). Referenced by URL in `SCENES` array. |
 
 ## Planned Features
 
 | Area | Vision |
 | --- | --- |
-| 7-Chakra Daily Sequence | Expand the `SCENES` array to support 7 distinct meditation sequences—one for each chakra affirmation (I AM, I FEEL, I DO, I LOVE, I TALK, I SEE, I UNDERSTAND). Each sequence maps to a chakra color (Red, Orange, Yellow, Green, Blue, Indigo, Violet) and daily activity (grounding, stretching, focus work, gratitude, communication, reflection, integration). Currently has 1 linear sequence of 8 scenes; will reorganize into 7 selectable sequences. |
-| User-Selectable Sequences | Allow users to choose which chakra sequence to experience, either manually (menu UI) or automatically based on time of day. The 7 sequences will be pre-defined in the `SCENES` array with metadata (chakra, color, affirmation) and `play()` will filter/activate the chosen sequence. |
-| Chakra Color Theming | Extend `SCENE_HUES` to support distinct color palettes per chakra sequence. Ensure each chakra maps to its corresponding color (Red → Orange → Yellow → Green → Blue → Indigo → Violet), creating smooth color transitions that align with the affirmation and activity focus. |
+| 7-Chakra Daily Sequence | Expand `SCENES` to 7 sequences—one per chakra (I AM, I FEEL, I DO, I LOVE, I TALK, I SEE, I UNDERSTAND). Each maps to color (Red, Orange, Yellow, Green, Blue, Indigo, Violet) and daily activity. Reorganize from 1 linear sequence to 7 selectable sequences. |
+| User-Selectable Sequences | Users choose chakra sequence manually (menu) or automatically (time-based). 7 sequences pre-defined in `SCENES` with metadata; `runShow()` filters/activates chosen sequence. |
+| Chakra Color Theming | Extend `:root[data-scene="N"]` theming for distinct palettes per chakra. Map colors (Red→Orange→Yellow→Green→Blue→Indigo→Violet) with smooth transitions. CSS-based, no JS color arrays. |
 
 ### 7-Chakra Sequence Details
 
-Each chakra sequence will incorporate available checkpoint assets to create immersive meditation experiences aligned with daily activities:
+**1. I AM (Red) — Grounding:** Wake up, slow breaths, barefoot grounding. Checkpoints: Sunrise Meditation Room, Breath Practice Circle, Kitchen/Backyard choice.
 
-**1. I AM (Red) — Grounding & Wake Up**
-- Activity: Wake up and ground yourself; take slow breaths or stand barefoot on the floor/earth
-- Potential checkpoints: Sunrise Meditation Room (morning grounding), Breath Practice Circle (breath awareness), choice between Kitchen Welcome or Backyard Reading (grounding activities)
+**2. I FEEL (Orange) — Sensation:** Meditation/stretching, notice sensations. Checkpoints: Teachers Portrait, Breath Practice Circle, Chaplain Study Hall/Backyard choice.
 
-**2. I FEEL (Orange) — Sensation & Movement**
-- Activity: Start meditation or gentle stretching; notice sensations and emotions
-- Potential checkpoints: Teachers Portrait (guidance), Breath Practice Circle (meditation practice), choice between Chaplain Study Hall or Backyard Reading (reflective spaces)
+**3. I DO (Yellow) — Action:** Nourishing breakfast, focused tasks. Checkpoints: Kitchen Welcome, Workshop Presentation, Steakhouse/Teacher Conversation choice.
 
-**3. I DO (Yellow) — Action & Focus**
-- Activity: Eat a nourishing breakfast or tackle a clear task with focus
-- Potential checkpoints: Kitchen Welcome (nourishment), Workshop Presentation (focused work), choice between Steakhouse Conversation or Teacher Conversation (meaningful engagement)
+**4. I LOVE (Green) — Gratitude:** Express gratitude, acts of kindness. Checkpoints: Teachers Portrait, Communal Beach Circle, Kitchen/Teacher Conversation choice.
 
-**4. I LOVE (Green) — Gratitude & Kindness**
-- Activity: Express gratitude or do a small act of kindness for someone
-- Potential checkpoints: Teachers Portrait (connection), Communal Beach Circle (community), choice between Kitchen Welcome or Teacher Conversation (acts of kindness)
+**5. I TALK (Blue) — Communication:** Journal, voice needs, honest conversation. Checkpoints: Backyard Reading, Teacher Conversation, Steakhouse/Workshop choice.
 
-**5. I TALK (Blue) — Communication & Expression**
-- Activity: Journal, voice your needs, or have an honest conversation
-- Potential checkpoints: Backyard Reading (journaling), Teacher Conversation (honest dialogue), choice between Steakhouse Conversation or Workshop Presentation (expressive spaces)
+**6. I SEE (Indigo) — Reflection:** 5-minute reflection, mindful observation. Checkpoints: Lakeside Overlook, Starry Night Vigil, Rooftop Meditators/Sun Spiral choice.
 
-**6. I SEE (Indigo) — Reflection & Insight**
-- Activity: Take 5 minutes for reflection or mindful observation; notice patterns and insights
-- Potential checkpoints: Lakeside Overlook (observation), Starry Night Vigil (reflection), choice between Rooftop Meditators or Sun Spiral Overlook (contemplative views)
+**7. I UNDERSTAND (Violet) — Integration:** Evening stillness, prayer, silent breaths. Checkpoints: Starry Night Vigil, Rooftop Meditators, Sun Spiral/Lakeside choice.
 
-**7. I UNDERSTAND (Violet) — Integration & Stillness**
-- Activity: Close the day with stillness, prayer, or a few silent breaths; integrate what you learned
-- Potential checkpoints: Starry Night Vigil (evening stillness), Rooftop Meditators (contemplation), choice between Sun Spiral Overlook or Lakeside Overlook (peaceful integration)
-
-Each sequence will use the chakra-specific color theming (via CSS custom properties in inline styles) and incorporate transitions between checkpoints, creating a cohesive daily meditation journey that aligns with the chakra's affirmation and activity focus.
+Each sequence uses chakra-specific CSS theming and transitions between checkpoints.
 
 ## Potential Future Sequences
 
-Based on available checkpoint metadata, the following sequences could be generated as standalone `<section data-sequence-id>` blocks within `index.html`:
+**Morning Practice:** Sunrise Meditation Room → Teachers Portrait → Breath Practice Circle → Choice (Chaplain Study Hall, Kitchen, Backyard).
 
-### Meditation Journey Sequences
+**Evening Reflection:** Starry Night Vigil → Sun Spiral Overlook → Rooftop Meditators → Lakeside Overlook → Choice (Communal Beach Circle, Steakhouse, Teacher Conversation).
 
-**Morning Practice Sequence**
-- Sunrise Meditation Room (image checkpoint)
-- Teachers Portrait (image checkpoint)
-- Breath Practice Circle (image checkpoint)
-- Choice: Chaplain Study Hall, Kitchen Welcome, or Backyard Reading
+**Workshop Experience:** Teachers Portrait → Workshop Presentation → Breath Practice Circle → Choice (Teacher Conversation, Kitchen, Backyard).
 
-**Evening Reflection Sequence**
-- Starry Night Vigil (image checkpoint)
-- Sun Spiral Overlook (image checkpoint)
-- Rooftop Meditators (image checkpoint)
-- Lakeside Overlook (image checkpoint)
-- Choice: Communal Beach Circle, Steakhouse Conversation, or Teacher Conversation
+## Available Checkpoint Assets
 
-**Workshop Experience Sequence**
-- Teachers Portrait (image checkpoint)
-- Workshop Presentation (choice checkpoint)
-- Breath Practice Circle (image checkpoint)
-- Choice: Teacher Conversation, Kitchen Welcome, or Backyard Reading
+**Scenes 1-8:** Files `1-1.png` through `8-2.png` with branching variants (e.g., `2-2a.png`, `2-2b.png`). Content: morning meditation, maté/breakfast choices, cold plunge/garden reading, breathwork, teacher conversations, cooking, workshop talks, evening reflection.
 
-### Available Checkpoint Assets
+**Transitions:** Videos `1.mp4`, `2a.mp4`, `2b.mp4`, etc., numbered to match scenes with a/b variants for branching paths.
 
-**Image Checkpoints** (non-interactive meditation pauses):
-- Sunrise Meditation Room — Dawn light fills a tidy meditation room with four cushions arranged on the wooden floor
-- Teachers Portrait — Two meditation teachers sit cross-legged on a sofa, framed by a window of swirling pastel light
-- Breath Practice Circle — A cozy practice room where several people meditate together, guiding their breath with alternate-nostril hand mudras
-- Starry Night Vigil — A guide stands before a sea of reclining seekers beneath a night sky alive with swirling stars and candlelight
-- Sun Spiral Overlook — Hundreds meditate on a hillside overlooking a lakeside town while a fiery spiral sunset blooms overhead
-- Rooftop Meditators — Meditators sit on rooftops across a twilight village as a luminous spiral hovers in the deep-blue sky
-- Lakeside Overlook — A sweeping aerial view of a lakeside town, winding shoreline roads, and boats tracing gentle patterns in the water
-
-**Choice Checkpoints** (interactive decision points):
-- Chaplain Study Hall — Haloed practitioners meditate in rows before a golden hilltop chapel, bathed in soft morning light
-- Communal Beach Circle — Friends sit shoulder to shoulder on a sandy beach, laughing together as the forest rises behind them
-- Steakhouse Conversation — A smiling friend points across a candlelit table set with steak, red wine, and notebooks ready for a lively chat
-- Kitchen Welcome — A cheerful host in a patterned coat offers a warm bowl outside a rustic kitchen cabin in the cool morning air
-- Workshop Presentation — A presenter introduces the Meditation Research Program to an engaged audience in a vivid, lantern-lit hall
-- Backyard Reading — Two retreatants unwind on picnic blankets, one journaling and the other reading beneath a sun-dappled canopy
-- Teacher Conversation — Two teachers share an easy smile beside a warmly lit window, ready to continue a heartfelt discussion
-
-These sequences can be added as new `<section data-sequence-id="...">` blocks in `public/index.html`, each with their own theme CSS variables and checkpoint/transition markup.
+To modify scenes, edit the `SCENES` array in `public/index.html`.

@@ -2,12 +2,12 @@
 
 **Goal**: Interactive guided meditation experience with inline single-file architecture, branching paths, and dynamic visual effects
 
-**Stack**: Bun (server), single HTML file (480 lines total: ~100 CSS + ~365 JS), no dependencies
+**Stack**: Bun (server), single HTML file with all code inline, no dependencies
 
 ## Repository Structure
 
 ```
-.claude/{hooks,skills,settings} → notes/ → docs/ → public/{index.html,assets/} → server.js
+.claude/{hooks,skills} → notes/ → public/{index.html,assets/} → server.js
 ```
 
 ## Project Overview
@@ -15,41 +15,49 @@
 A single-file meditation experience (`public/index.html`) that:
 - Contains all code inline: CSS in `<style>` block, JavaScript in `<script>` block
 - 8 scenes with branching paths based on arrow key choices (← / →)
-- Scene data defined in `SCENES` JavaScript array (not data attributes)
-- Preloads and caches all media (images/videos) in Map objects before starting
+- Scene data defined in `SCENES` JavaScript array with phases: intro, transition, outro
+- Preloads and caches all media (images/videos) in `mediaCache` Map before starting
 - Interactive choice system: users choose between 2 paths at decision points
 - CSS-driven fades, animations, and radial border effects
-- Per-scene hue theming via `SCENE_HUES` array
-- Simple Bun server (23 lines) serves static files
+- Per-scene hue theming via CSS `:root[data-scene="N"]` attributes
+- Simple Bun server serves static files
 
 ## Current Implementation (single HTML file)
 
 **Everything is inline in `public/index.html`:**
 
-### Scene Data (~130 lines)
+### CSS Styling
+- Scene-specific theming via `:root[data-scene="N"]` attributes (N = 1-8)
+- Each scene defines `--hue`, `--sat`, `--lum` values
+- CSS variables: `--breath`, `--surface-bg`, `--caption-bg`, `--text`, `--shadow`
+- `radiate` keyframe animation for pulsing border glow
+- Responsive layout with `fadeIn` animation for media nodes
+
+### Scene Data
 - `SCENES` array: 8 scenes ('one' through 'eight')
-- Each scene has `start`, `video`, `end` items
-- Items can be:
-  - Simple: single `src` and `caption`
-  - Interactive: `left`/`right` assets with `captionLeft`/`captionRight` and a `key`
-  - Conditional: `follow` property uses previous choice to determine which asset/caption to show
+- Each scene has `{ id, phases: { intro, transition, outro } }`
+- Step types:
+  - Simple: `{ type, src, caption }` - single asset
+  - Interactive: `{ type, left, right, choiceKey, captionLeft, captionRight }` - user chooses path
+  - Conditional: `{ type, left, right, dependsOn }` - follows previous choice
 
-### Media Preloading (~60 lines)
-- `collectUrls()` gathers all asset URLs from `SCENES`
-- `preloadImage()` and `preloadVideo()` populate `imgCache` and `vidCache` Maps
-- Waits for all media before calling `play()`
+### Media Preloading
+- `preload()` function populates `mediaCache` Map (url → Image|HTMLVideoElement)
+- Waits for all media with fail-open timeout (2000ms per video)
+- Boot script collects all URLs and calls `runShow()` after preload completes
 
-### Playback Logic (~175 lines)
-- `play()` iterates through scenes, calling `showStill()` and `playVideo()`
-- `showStill()` handles checkpoints, interactive choices, and conditional rendering
-- `awaitChoice()` listens for arrow key input and stores path in `path` object
-- `urlFor()` and `captionFor()` resolve conditional assets based on previous choices
-- `render()` swaps DOM nodes and triggers CSS fade transitions
+### Playback Logic
+- `runShow()` iterates through all 8 scenes
+- `playStep()` handles intro/transition/outro phases
+- Three step patterns: reveal-only, choice-only, or compound (reveal then choose)
+- `waitForArrowChoice()` listens for arrow key input and stores choice in `choiceByKey` object
+- `playAsset()` handles both images (with STILL_IMAGE_MS delay) and videos (play until ended)
+- `mountMedia()` swaps DOM nodes and triggers CSS fade via `fadeIn` animation
 
-### Theming (~10 lines)
-- `SCENE_HUES` array: 8 color triplets [h, s, l]
-- `applyHue()` updates CSS custom properties `--h`, `--s`, `--l` per scene
-- CSS `radiate` animation uses these properties for pulsing border glow
+### Theming
+- No JavaScript array - all theming is CSS-based
+- `rootEl.dataset.scene` updated per scene to trigger CSS `:root[data-scene="N"]` rules
+- Smooth color transitions between scenes via CSS custom properties
 
 ## Skills Workflow
 
@@ -67,24 +75,20 @@ A single-file meditation experience (`public/index.html`) that:
 
 ```
 .claude/
-├── hooks/                      # Automated event hooks (8 files)
-├── skills/                     # Specialized agent skills (10 skills)
-└── settings.json              # Claude Code configuration
-docs/
-├── fix.md                      # Outstanding fixes (summary)
-└── refactor.md                 # Refactor notes (summary)
+├── hooks/                      # Automated event hooks
+└── skills/                     # Specialized agent skills
 notes/
 ├── context.md                  # Browser constraints & technical context
 ├── cursor-setup.md             # Cursor IDE setup guide
 ├── features.md                 # Implemented & planned features
-├── fix.md                      # Detailed outstanding fixes
-└── refactor.md                 # Detailed refactor plan
+├── fix.md                      # Outstanding fixes
+└── refactor.md                 # Refactor notes
 public/
-├── index.html                  # Single HTML file (~480 lines: CSS + JS inline)
+├── index.html                  # Single HTML file with all code inline
 └── assets/
-    ├── checkpoints/            # Still images (PNG)
-    └── transitions/            # Videos (MP4)
-server.js                       # Bun HTTP server (23 lines)
+    ├── checkpoints/            # Still images (1-1.png through 8-2.png)
+    └── transitions/            # Videos (1.mp4, 2a.mp4, 2b.mp4, etc.)
+server.js                       # Bun HTTP server
 biome.json                      # Biome linter configuration
 ```
 
@@ -95,29 +99,31 @@ Scenes are defined in the `SCENES` JavaScript array:
 ```javascript
 {
   id: 'two',
-  items: {
-    start: {
-      type: 'img',
+  phases: {
+    intro: {
+      type: 'image',
       caption: "Drink maté at home or get breakfast with a friend?",
-      left: '/assets/checkpoints/2-1.png',
-      right: '/assets/checkpoints/2-1.png',
-      key: 'two-start',
+      left: 'assets/checkpoints/2-1.png',
+      right: 'assets/checkpoints/2-1.png',
+      choiceKey: 'two-start',
       captionLeft: "Drink maté at home",
       captionRight: "Get breakfast with a friend"
     },
-    video: {
-      type: 'vid',
-      left: '/assets/transitions/2a.mp4',
-      right: '/assets/transitions/2b.mp4',
-      follow: 'two-start'
+    transition: {
+      type: 'video',
+      left: 'assets/transitions/2a.mp4',
+      right: 'assets/transitions/2b.mp4',
+      dependsOn: 'two-start'
     },
-    end: {
-      type: 'img',
+    outro: {
+      type: 'image',
       caption: "Cold plunge or read in the garden?",
-      left: '/assets/checkpoints/2-2a.png',
-      right: '/assets/checkpoints/2-2b.png',
-      key: 'two-end',
-      follow: 'two-start'
+      left: 'assets/checkpoints/2-2a.png',
+      right: 'assets/checkpoints/2-2b.png',
+      captionLeft: "I love maté!",
+      captionRight: "My favorite food at Casa Chola.",
+      dependsOn: 'two-start',
+      choiceKey: 'two-end'
     }
   }
 }
@@ -125,13 +131,13 @@ Scenes are defined in the `SCENES` JavaScript array:
 
 ### CSS Variables for Theming
 `public/index.html` uses CSS custom properties for timing and colors:
-- `--h`, `--s`, `--l`: Hue, saturation, lightness (updated per scene by JavaScript)
-- `--fade`: Fade transition duration (0.5s)
-- `--border`: Border animation duration (8.5s)
+- `--hue`, `--sat`, `--lum`: Hue, saturation, lightness (set per scene via CSS `:root[data-scene="N"]`)
+- `--breath`: Border animation duration (8.5s)
 - `--surface-bg`, `--caption-bg`: Background colors with transparency
 - `--text`, `--shadow`: Text and shadow styling
 
-JavaScript updates hue values via `root.style.setProperty()` from `SCENE_HUES` array.
+JavaScript updates `rootEl.dataset.scene` per scene, which triggers CSS rules to set color values.
+No JavaScript array needed - all theming is CSS-based.
 
 ## Hooks
 
@@ -191,15 +197,12 @@ Automated deployment via `.github/workflows/deploy.yml`:
 - **notes/** - Detailed development documentation
   - `features.md` - Implemented & planned features (including 7-chakra vision)
   - `fix.md` - Outstanding fixes and issues
-  - `context.md` - Browser constraints, data schemas, performance
+  - `context.md` - Browser constraints and technical context
   - `refactor.md` - Refactor notes and principles
   - `cursor-setup.md` - Cursor IDE setup guide
-- **docs/** - Summary documentation (shorter versions)
-  - `fix.md` - Outstanding fixes summary
-  - `refactor.md` - Refactor summary
 
 ## Outstanding Work
 
-See `notes/fix.md` and `docs/fix.md` for known issues and planned improvements.
+See `notes/fix.md` for known issues and planned improvements.
 
 See `notes/features.md` for the feature roadmap and `notes/refactor.md` for architecture principles.

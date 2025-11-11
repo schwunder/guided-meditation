@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Post-tool validation for Write/Edit operations
+# Runs linting on JavaScript files if Biome is configured
+
+HOOK_INPUT=$(cat)
+FILE_PATH=$(echo "$HOOK_INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null || echo "")
+
+fail_with_error() {
+  echo "$1" >&2
+  exit 2
+}
+
+if [ -n "$FILE_PATH" ]; then
+  # Run lint only for .js files (if Biome is configured)
+  if [[ "$FILE_PATH" == *.js ]]; then
+    if [ -f "biome.json" ]; then
+      LINT_OUTPUT=$(./.claude/hooks/lint-runner.ts "$FILE_PATH" 2>&1)
+      LINT_EXIT=$?
+      # Only fail on critical errors (exit 1), not warnings (exit 0 or 2)
+      [ $LINT_EXIT -eq 1 ] && fail_with_error "$LINT_OUTPUT"
+    fi
+  fi
+fi
+
+cat <<EOF
+{
+  "systemMessage": "Success"
+}
+EOF

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cat | ./.claude/hooks/prompt-enhancer.ts

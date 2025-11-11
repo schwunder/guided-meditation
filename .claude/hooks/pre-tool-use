@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Pre-tool validation for Write/Edit operations
+# Currently minimal since project uses vanilla JS (no TS checking needed)
+
+cat <<EOF
+{
+  "systemMessage": "Success"
+}
+EOF
