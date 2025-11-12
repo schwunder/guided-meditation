@@ -51,7 +51,7 @@ Use `//#region` comments or Cursor shortcuts: `Cmd+K, Cmd+0` (fold all), `Cmd+K,
 
 **Biome.js:** Auto-formats on save. Check `biome.json` for rules. Run `npx @biomejs/biome check .` for linting issues.
 
-**Mermaid Diagrams:** Store in `mermaid diagrams/` folder. Use `.mmd` extension or embed in markdown with ` ```mermaid ` code blocks.
+**Mermaid Diagrams:** Store in `mermaid/` folder. Use `.mmd` extension or embed in markdown with ` ```mermaid ` code blocks.
 
 **File Organization:** Keep `public/index.html` concise (all code inline). Use CSS custom properties for theming. Reference `.cursor/rules` for conventions.
 

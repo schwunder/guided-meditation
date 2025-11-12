@@ -47,7 +47,7 @@ notes/                      # Detailed development documentation
 ├── hooks/                  # Automated event hooks
 └── skills/                 # Specialized agent skills
 
-mermaid diagrams/          # Mermaid diagram files (.mmd or .md)
+mermaid/                   # Mermaid diagram files (.mmd or .md)
 
 .cursor/                    # Cursor IDE configuration
 biome.json                  # Biome.js configuration
@@ -68,7 +68,7 @@ server.js                   # Bun HTTP server (23 lines)
 - Keep `README.md` and `CLAUDE.md` in root
 - Detailed docs in `notes/` folder
 - Use lowercase filenames for consistency (`context.md` not `CONTEXT.md`)
-- Mermaid diagrams go in `mermaid diagrams/` folder
+- Mermaid diagrams go in `mermaid/` folder
 
 ## Git & Version Control
 
@@ -84,7 +84,7 @@ server.js                   # Bun HTTP server (23 lines)
 ## Mermaid Diagrams
 
 ### Diagram Support
-- Store Mermaid diagrams in `mermaid diagrams/` folder
+- Store Mermaid diagrams in `mermaid/` folder
 - Use `.mmd` extension for pure Mermaid files
 - Can embed in `.md` files using ```mermaid code blocks
 - Reference diagrams in documentation with relative paths

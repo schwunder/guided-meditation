@@ -54,7 +54,7 @@ See `CLAUDE.md` for detailed workflow and `notes/context.md` for browser constra
 ## Documentation Structure
 
 - **`notes/`** - Development docs: `features.md`, `fix.md`, `context.md`, `cursor-setup.md`, `refactor.md`
-- **`mermaid diagrams/`** - Mermaid diagram files
+- **`mermaid/`** - Mermaid diagram files
 - **`.claude/`** - Claude Code integration (hooks and skills)
 - **`CLAUDE.md`** - Claude Code workflow overview
 - **`README.md`** - This file
